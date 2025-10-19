@@ -10,9 +10,9 @@ export default function Footer() {
   const version = "0.1.0";
 
   return (
-    <footer className="mt-auto py-4 text-center text-sm text-gray-500 border-t border-gray-200/10">
+    <footer className="mt-auto py-4 text-center text-sm text-neutral-400">
       <p>
-        RESIO v{version} - <span className="text-xl text-orange-500">α</span>
+        RESIO v{version} - <span className="text-xl text-neutral-500">α</span>
       </p>
     </footer>
   );
