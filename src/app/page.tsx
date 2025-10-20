@@ -2,7 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Logo from "@/components/ui/logo";
 import Link from "next/link";
-import { Plus, Calendar, BarChart3 } from "lucide-react";
+import { Plus, Calendar, BarChart3, Search, MapPin, Users } from "lucide-react";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -15,44 +15,68 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
             <Logo size="lg" className="mb-6" />
-            <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Gestiona tus propiedades
-              <br />
-              de manera simple
             </h1>
-            <p className="text-xl text-neutral-400 max-w-3xl mx-auto mb-8">
-              RE/SIO es la plataforma que necesitas para administrar tus propiedades en alquiler.
-              Publica, gestiona reservas y controla tus ingresos desde un solo lugar.
-            </p>
+            <div className="max-w-5xl mx-auto mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-0">
+                <div className="relative border border-neutral-800">
+                  <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-4 h-4 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="¿Dónde?"
+                    className="w-full pl-4 pr-10 py-4 bg-transparent text-foreground placeholder-neutral-400 focus:outline-none"
+                  />
+                </div>
+                <div className="relative border border-neutral-800 border-l-0">
+                  <label className="absolute left-3 top-2 text-xs text-neutral-400 font-medium">INGRESO</label>
+                  <input
+                    type="date"
+                    className="w-full pt-6 pb-2 pl-3 pr-4 bg-transparent text-foreground focus:outline-none"
+                    style={{
+                      colorScheme: 'dark'
+                    }}
+                  />
+                </div>
+                <div className="relative border border-neutral-800 border-l-0">
+                  <label className="absolute left-3 top-2 text-xs text-neutral-400 font-medium">SALIDA</label>
+                  <input
+                    type="date"
+                    className="w-full pt-6 pb-2 pl-3 pr-4 bg-transparent text-foreground focus:outline-none"
+                    style={{
+                      colorScheme: 'dark'
+                    }}
+                  />
+                </div>
+                <div className="relative border border-neutral-800 border-l-0">
+                  <Users className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-4 h-4 pointer-events-none" />
+                  <select className="w-full pl-4 pr-10 py-4 bg-neutral-900 text-foreground focus:outline-none appearance-none">
+                    <option value="">Personas</option>
+                    <option value="1" className="bg-neutral-900 text-foreground">1 persona</option>
+                    <option value="2" className="bg-neutral-900 text-foreground">2 personas</option>
+                    <option value="3" className="bg-neutral-900 text-foreground">3 personas</option>
+                    <option value="4" className="bg-neutral-900 text-foreground">4 personas</option>
+                    <option value="5+" className="bg-neutral-900 text-foreground">5+ personas</option>
+                  </select>
+                </div>
+                <button className="bg-foreground text-background px-8 py-4 font-medium hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 border border-neutral-800 border-l-0">
+                  <Search className="w-4 h-4" />
+                  Buscar
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/registro"
-              className="bg-foreground text-background px-8 py-3 text-lg font-medium hover:bg-neutral-200 transition-colors"
-            >
-              Comenzar Gratis
-            </Link>
-            <Link
-              href="/ingresar"
-              className="border border-neutral-800 text-foreground px-8 py-3 text-lg font-medium hover:bg-neutral-900 transition-colors"
-            >
-              Iniciar Sesión
-            </Link>
-          </div>
         </div>
       </section>
 
       {/* Features Section */}
       <section className="py-20 border-t border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Todo lo que necesitas para gestionar tus propiedades
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              Gestiona tus propiedades
             </h2>
-            <p className="text-neutral-400 max-w-2xl mx-auto">
-              Una plataforma completa y minimalista diseñada para propietarios que buscan eficiencia
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -104,23 +128,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 border-t border-neutral-800">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
-            ¿Listo para simplificar la gestión de tus propiedades?
-          </h2>
-          <p className="text-neutral-400 mb-8 text-lg">
-            Únete a RE/SIO y comienza a gestionar tus alquileres de manera profesional
-          </p>
-          <Link
-            href="/registro"
-            className="bg-foreground text-background px-8 py-3 text-lg font-medium hover:bg-neutral-200 transition-colors"
-          >
-            Crear Cuenta Gratis
-          </Link>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="border-t border-neutral-800 py-8">

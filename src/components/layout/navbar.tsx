@@ -1,11 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
-import { LayoutDashboard, LogOut, LogIn, UserPlus } from 'lucide-react'
+import { LayoutDashboard, LogOut, LogIn, UserPlus, ChevronDown } from 'lucide-react'
 
 interface NavbarProps {
   user: User | null
@@ -14,6 +15,7 @@ interface NavbarProps {
 export default function Navbar({ user }: NavbarProps) {
   const router = useRouter()
   const authService = new AuthService()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleLogout = async () => {
     try {
@@ -38,38 +40,54 @@ export default function Navbar({ user }: NavbarProps) {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <Link
-                  href="/tablero"
-                  className="inline-flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
-                >
-                  <LayoutDashboard className="w-4 h-4" />
-                  Tablero
-                </Link>
-                <div className="flex items-center space-x-3">
-                  {user.user_metadata?.avatar_url ? (
-                    <img
-                      src={user.user_metadata.avatar_url}
-                      alt="Avatar"
-                      className="w-8 h-8 bg-neutral-700"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 bg-neutral-700 flex items-center justify-center">
-                      <span className="text-foreground text-sm font-medium">
-                        {(user.user_metadata?.full_name || user.email || '').charAt(0).toUpperCase()}
-                      </span>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className="flex items-center space-x-2 text-neutral-400 hover:text-foreground transition-colors"
+                  >
+                    {user.user_metadata?.avatar_url ? (
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt="Avatar"
+                        className="w-8 h-8 bg-neutral-700 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-neutral-700 rounded-full flex items-center justify-center">
+                        <span className="text-foreground text-sm font-medium">
+                          {(user.user_metadata?.full_name || user.email || '').charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                  {isMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-md shadow-lg z-50">
+                      <div className="py-1">
+                        <div className="px-4 py-2 text-sm text-neutral-400 border-b border-neutral-800">
+                          {user.user_metadata?.full_name || user.email}
+                        </div>
+                        <Link
+                          href="/tablero"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <LayoutDashboard className="w-4 h-4" />
+                          Tablero
+                        </Link>
+                        <button
+                          onClick={() => {
+                            handleLogout()
+                            setIsMenuOpen(false)
+                          }}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Cerrar sesión
+                        </button>
+                      </div>
                     </div>
                   )}
-                  <span className="text-neutral-400">
-                    {user.user_metadata?.full_name || user.email}
-                  </span>
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="inline-flex items-center gap-2 bg-foreground text-background px-4 py-2 text-sm font-medium hover:bg-neutral-200 transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Cerrar sesión
-                </button>
               </>
             ) : (
               <>
