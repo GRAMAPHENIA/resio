@@ -1,20 +1,26 @@
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-/**
- * Ruta de callback para autenticación OAuth
- *
- * Esta ruta maneja el callback después de que el usuario complete el proceso
- * de autenticación con un proveedor OAuth (como Google). Actualmente, simplemente
- * redirige al usuario a la página principal.
- *
- * En el futuro, podría incluir lógica adicional como:
- * - Verificar el estado de la autenticación
- * - Manejar errores de autenticación
- * - Establecer cookies de sesión
- * - Redirigir a una página específica basada en el contexto
- *
- * @returns {NextResponse} Redirección a la página principal
- */
-export async function GET() {
-  return NextResponse.redirect("/");
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get("code");
+  const next = searchParams.get("next") ?? "/tablero";
+
+  if (code) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) {
+      const forwardedHost = request.headers.get("x-forwarded-host");
+      const isLocalEnv = process.env.NODE_ENV === "development";
+      if (isLocalEnv) {
+        return NextResponse.redirect(`${origin}${next}`);
+      } else if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`);
+      } else {
+        return NextResponse.redirect(`${origin}${next}`);
+      }
+    }
+  }
+
+  return NextResponse.redirect(`${origin}/registro`);
 }

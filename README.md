@@ -1,72 +1,136 @@
-# RESIO
+# RE/SIO - Plataforma de Alquiler de Propiedades
 
-Una aplicación web para explorar y gestionar opciones de alojamiento, construida con Next.js, React y Supabase.
+Una aplicación minimalista para gestionar propiedades en alquiler, construida con Next.js 15, Supabase y Tailwind CSS.
 
-## Descripción
+## Características
 
-RESIO es una plataforma que permite a los usuarios explorar una amplia variedad de opciones de alojamiento que se adapten a sus necesidades. Actualmente incluye autenticación con Google a través de Supabase.
+- ✅ Autenticación completa con Google OAuth
+- ✅ Gestión de propiedades (CRUD)
+- ✅ Dashboard de usuario
+- ✅ Diseño minimalista sin bordes redondeados
+- ✅ Paleta de colores limitada (gris oscuro + blanco marfil)
+- ✅ Responsive design
 
-## Instalación
+## Configuración
 
-1. Clona el repositorio:
-   ```bash
-   git clone <url-del-repositorio>
-   cd resio
-   ```
+### 1. Configurar Supabase
 
-2. Instala las dependencias:
-   ```bash
-   pnpm install
-   ```
+1. Ve a [Supabase](https://supabase.com) y crea un nuevo proyecto
+2. En el SQL Editor, ejecuta el contenido del archivo `supabase-schema.sql`
+3. Ve a Authentication > Providers y configura Google OAuth:
+   - Habilita Google provider
+   - Agrega tu Client ID y Client Secret de Google
+   - Configura la URL de redirección: `https://tu-proyecto.supabase.co/auth/v1/callback`
 
-3. Configura las variables de entorno:
-   Crea un archivo `.env.local` con las siguientes variables:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
-   ```
+### 2. Configurar Google OAuth
 
-4. Ejecuta la aplicación en modo desarrollo:
-   ```bash
-   pnpm dev
-   ```
+1. Ve a [Google Cloud Console](https://console.cloud.google.com)
+2. Crea un nuevo proyecto o selecciona uno existente
+3. Habilita la Google+ API
+4. Ve a Credentials y crea OAuth 2.0 Client IDs
+5. Agrega las URLs autorizadas:
+   - `http://localhost:3000` (desarrollo)
+   - `https://tu-dominio.vercel.app` (producción)
+6. Agrega las URLs de redirección:
+   - `https://tu-proyecto.supabase.co/auth/v1/callback`
 
-## Uso
+### 3. Variables de Entorno
 
-- Abre tu navegador en `http://localhost:3000`
-- Haz clic en "Iniciar sesión con Google" para autenticarte
-- Explora las opciones de alojamiento disponibles
+Actualiza tu archivo `.env.local`:
 
-## Tecnologías
+```env
+NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
+```
 
-- **Next.js**: Framework de React para aplicaciones web
-- **React**: Biblioteca para interfaces de usuario
-- **Supabase**: Plataforma de backend como servicio
-- **Tailwind CSS**: Framework de CSS utilitario
-- **TypeScript**: Superset de JavaScript con tipado estático
+### 4. Instalar Dependencias
+
+```bash
+pnpm install
+```
+
+### 5. Ejecutar en Desarrollo
+
+```bash
+pnpm dev
+```
 
 ## Estructura del Proyecto
 
 ```
 src/
-├── app/
-│   ├── auth/callback/route.ts  # Ruta de callback para autenticación
-│   ├── page.tsx                # Página principal
-│   └── layout.tsx              # Layout de la aplicación
-├── components/
-│   └── LoginButton.tsx         # Componente de botón de login
-└── lib/supabase/
-    ├── client.ts               # Cliente de Supabase para el cliente
-    └── server.ts               # Cliente de Supabase para el servidor
+├── app/                           # App Router de Next.js
+│   ├── auth/callback/             # Callback de OAuth
+│   ├── registro/                  # Página de registro
+│   ├── ingresar/                  # Página de login
+│   ├── bienvenida/                # Página de bienvenida
+│   ├── tablero/                   # Tablero principal
+│   ├── propiedades/               # Gestión de propiedades
+│   │   ├── page.tsx               # Lista de propiedades
+│   │   └── agregar/               # Agregar propiedad
+│   ├── page.tsx                   # Página de inicio pública
+│   └── layout.tsx                 # Layout principal
+├── components/                    # Componentes reutilizables
+│   ├── auth/                      # Componentes de autenticación
+│   ├── layout/                    # Layout y navegación
+│   ├── properties/                # Componentes de propiedades
+│   └── ui/                        # Componentes de UI básicos
+├── services/                      # Servicios de negocio
+│   └── auth.service.ts            # Servicio de autenticación
+├── hooks/                         # Hooks personalizados
+│   └── useAuth.ts                 # Hook de autenticación
+├── lib/                           # Utilidades y configuración
+│   └── supabase/                  # Cliente de Supabase
+├── utils/                         # Utilidades generales
+│   └── validation.ts              # Validaciones
+├── constants/                     # Constantes de la aplicación
+│   └── routes.ts                  # Rutas de la aplicación
+└── types/                         # Tipos de TypeScript
+    └── database.ts                # Tipos de base de datos
 ```
 
-## Contribución
+## Funcionalidades Implementadas
 
-1. Crea una rama para tu feature: `git checkout -b feature/nueva-funcionalidad`
-2. Realiza tus cambios y haz commit: `git commit -m "Agrega nueva funcionalidad"`
-3. Sube tus cambios: `git push origin feature/nueva-funcionalidad`
-4. Crea un Pull Request
+### Autenticación
+- Login con Google OAuth
+- Middleware para proteger rutas
+- Logout automático
+- Gestión de sesiones
 
-## Licencia
+### Propiedades
+- Agregar nuevas propiedades
+- Listar propiedades del usuario
+- Formulario completo con validación
+- Cards de propiedades con información básica
 
-Este proyecto está bajo la Licencia MIT.
+### UI/UX
+- Diseño minimalista
+- Logo RE/SIO personalizado
+- Navegación intuitiva
+- Responsive design
+
+## Próximos Pasos
+
+- [ ] Subida de imágenes para propiedades
+- [ ] Sistema de reservas
+- [ ] Búsqueda y filtros
+- [ ] Perfil de usuario
+- [ ] Notificaciones
+- [ ] Dashboard de analytics
+
+## Tecnologías
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS 4
+- **Icons**: Lucide React
+- **Backend**: Supabase (PostgreSQL)
+- **Autenticación**: Supabase Auth + Google OAuth
+- **Deployment**: Vercel
+
+## Deploy
+
+La aplicación está configurada para desplegarse automáticamente en Vercel. Solo conecta tu repositorio de GitHub y Vercel se encargará del resto.
+
+Asegúrate de configurar las variables de entorno en Vercel:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
