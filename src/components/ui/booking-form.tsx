@@ -86,7 +86,7 @@ export default function BookingForm({ property, onClose, onSuccess }: BookingFor
       localStorage.setItem('user_name', formData.user_name)
       localStorage.setItem('user_email', formData.user_email)
 
-      // Insert booking with status 'request' for approval
+      // Insert booking with status 'pending' for immediate payment
       const supabase = createClient()
       const { data: booking, error } = await supabase
         .from('bookings')
@@ -96,7 +96,7 @@ export default function BookingForm({ property, onClose, onSuccess }: BookingFor
           user_email: formData.user_email,
           start_date: formData.start_date,
           end_date: formData.end_date,
-          status: 'request', // Changed from 'pending' to 'request'
+          status: 'pending', // Status for payment
           amount
         })
         .select()
@@ -104,31 +104,23 @@ export default function BookingForm({ property, onClose, onSuccess }: BookingFor
 
       if (error) throw error
 
-      // For approved bookings, create Mercado Pago preference
-      if (booking.status === 'pending') {
-        const response = await fetch('/api/create-preference', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            booking_id: booking.id,
-            amount,
-            property_name: property.name,
-            user_name: formData.user_name,
-            user_email: formData.user_email
-          })
+      // Create Mercado Pago preference for immediate payment
+      const response = await fetch('/api/create-preference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          booking_id: booking.id,
+          amount,
+          property_name: property.name,
+          user_name: formData.user_name,
+          user_email: formData.user_email
         })
+      })
 
-        if (!response.ok) throw new Error('Error creating payment preference')
+      if (!response.ok) throw new Error('Error creating payment preference')
 
-        const { preferenceId } = await response.json()
-        onSuccess(preferenceId)
-      } else {
-        // Show success message for request submission
-        alert('¡Solicitud de reserva enviada! El propietario revisará tu solicitud y te contactará pronto.')
-
-        // Close the modal
-        onClose()
-      }
+      const { preferenceId } = await response.json()
+      onSuccess(preferenceId)
     } catch (error) {
       console.error('Error creating booking:', error)
       alert('Error al crear la reserva. Por favor intenta nuevamente.')

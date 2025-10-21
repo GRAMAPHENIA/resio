@@ -5,6 +5,11 @@ export interface Property {
   location: string
   price_per_night: number
   image_url?: string
+  owner_id: string
+  available: boolean
+  bedrooms: number
+  bathrooms: number
+  area: number
   created_at: string
 }
 

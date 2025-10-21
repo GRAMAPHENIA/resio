@@ -17,6 +17,11 @@ export default function Navbar({ user }: NavbarProps) {
   const authService = new AuthService()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
+  // Hide navbar for admin routes
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+    return null
+  }
+
   const handleLogout = async () => {
     try {
       await authService.signOut()
@@ -67,7 +72,7 @@ export default function Navbar({ user }: NavbarProps) {
                           {user.user_metadata?.full_name || user.email}
                         </div>
                         <Link
-                          href="/dashboard"
+                          href="/misreservas"
                           className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >

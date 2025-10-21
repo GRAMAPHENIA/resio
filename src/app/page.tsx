@@ -24,6 +24,7 @@ export default function Home() {
       const { data: properties, error } = await supabase
         .from('properties')
         .select('*')
+        .eq('available', true) // Solo mostrar propiedades disponibles/publicadas
         .order('created_at', { ascending: false })
         .limit(6) // Mostrar las últimas 6 propiedades publicadas
 

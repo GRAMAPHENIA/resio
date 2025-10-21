@@ -26,30 +26,52 @@ export default function AddPropertyForm() {
     setIsLoading(true)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Usuario no autenticado')
+      // Verificar si es admin primero
+      const isAdminLoggedIn = localStorage.getItem('admin_logged_in')
 
-      const { error } = await supabase
-        .from('properties')
-        .insert({
-          title: formData.title,
-          description: formData.description,
-          price: parseFloat(formData.price),
-          location: formData.location,
-          bedrooms: parseInt(formData.bedrooms),
-          bathrooms: parseInt(formData.bathrooms),
-          area: parseFloat(formData.area),
-          amenities: formData.amenities.split(',').map(a => a.trim()),
-          owner_id: user.id,
-          available: true,
-          images: []
-        })
+      if (isAdminLoggedIn) {
+        // Admin puede crear propiedades directamente
+        const { error } = await supabase
+          .from('properties')
+          .insert({
+            name: formData.title,
+            description: formData.description,
+            price_per_night: parseFloat(formData.price),
+            location: formData.location,
+            bedrooms: parseInt(formData.bedrooms),
+            bathrooms: parseInt(formData.bathrooms),
+            area: parseFloat(formData.area),
+            owner_id: 'admin', // ID especial para admin
+            available: false // Inicia como no publicada
+          })
 
-      if (error) throw error
+        if (error) throw error
+        router.push('/admin/dashboard')
+      } else {
+        // Usuario normal debe estar autenticado
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new Error('Usuario no autenticado')
 
-      router.push('/propiedades')
+        const { error } = await supabase
+          .from('properties')
+          .insert({
+            name: formData.title,
+            description: formData.description,
+            price_per_night: parseFloat(formData.price),
+            location: formData.location,
+            bedrooms: parseInt(formData.bedrooms),
+            bathrooms: parseInt(formData.bathrooms),
+            area: parseFloat(formData.area),
+            owner_id: user.id,
+            available: false // Inicia como no publicada
+          })
+
+        if (error) throw error
+        router.push('/propiedades')
+      }
     } catch (error) {
       console.error('Error:', error)
+      alert('Error al crear la propiedad')
     } finally {
       setIsLoading(false)
     }
