@@ -2,6 +2,20 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Home, Plus, Calendar, TrendingUp } from "lucide-react";
 
+// Función para generar color único por cliente
+function getClientColor(clientEmail: string): string {
+  const colors = [
+    'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500',
+    'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500',
+    'bg-orange-500', 'bg-cyan-500'
+  ];
+  let hash = 0;
+  for (let i = 0; i < clientEmail.length; i++) {
+    hash = clientEmail.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
+
 export default async function TableroPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -18,6 +32,39 @@ export default async function TableroPage() {
 
   const totalProperties = properties?.length || 0;
   const availableProperties = properties?.filter(p => p.available).length || 0;
+
+  // Obtener reservas de las propiedades del usuario
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select(`
+      *,
+      properties (
+        name
+      )
+    `)
+    .eq('properties.owner_id', user.id)
+    .order('start_date', { ascending: true });
+
+  const activeBookings = bookings?.filter(b => b.status === 'paid' || b.status === 'pending' || b.status === 'request') || [];
+  const pendingRequests = bookings?.filter(b => b.status === 'request') || [];
+  const totalRevenue = activeBookings.reduce((sum, booking) => sum + booking.amount, 0);
+
+  const handleBookingAction = async (bookingId: string, action: 'pending' | 'cancelled') => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: action })
+        .eq('id', bookingId)
+
+      if (error) throw error
+
+      // Refresh the page to show updated data
+      window.location.reload()
+    } catch (error) {
+      console.error('Error updating booking:', error)
+      alert('Error al procesar la solicitud')
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,17 +107,27 @@ export default async function TableroPage() {
                 Reservas Activas
               </h3>
             </div>
-            <p className="text-3xl font-bold text-blue-400">0</p>
+            <p className="text-3xl font-bold text-blue-400">{activeBookings.length}</p>
+          </div>
+
+          <div className="bg-neutral-900 p-6 border border-neutral-800">
+            <div className="flex items-center gap-3 mb-2">
+              <Calendar className="w-5 h-5 text-orange-400" />
+              <h3 className="text-lg font-semibold text-foreground">
+                Solicitudes Pendientes
+              </h3>
+            </div>
+            <p className="text-3xl font-bold text-orange-400">{pendingRequests.length}</p>
           </div>
 
           <div className="bg-neutral-900 p-6 border border-neutral-800">
             <div className="flex items-center gap-3 mb-2">
               <TrendingUp className="w-5 h-5 text-foreground" />
               <h3 className="text-lg font-semibold text-foreground">
-                Ingresos del Mes
+                Ingresos Totales
               </h3>
             </div>
-            <p className="text-3xl font-bold text-foreground">$0</p>
+            <p className="text-3xl font-bold text-foreground">${totalRevenue}</p>
           </div>
         </div>
 
@@ -131,15 +188,105 @@ export default async function TableroPage() {
           </div>
         </div>
 
-        {/* Actividad reciente */}
+        {/* Planilla de Reservas */}
         <div className="mt-8">
           <h2 className="text-2xl font-bold text-foreground mb-4">
-            Actividad Reciente
+            Planilla de Reservas
           </h2>
-          <div className="bg-neutral-900 border border-neutral-800 p-6">
-            <p className="text-neutral-400 text-center py-8">
-              No hay actividad reciente. Comienza agregando tu primera propiedad.
-            </p>
+          <div className="bg-neutral-900 border border-neutral-800 rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-neutral-800">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                      Cliente
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                      Propiedad
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                      Check-in
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                      Check-out
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                      Monto
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-800">
+                  {bookings?.map((booking: any) => (
+                    <tr key={booking.id} className="hover:bg-neutral-800/50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${getClientColor(booking.user_email)}`}></div>
+                          <div>
+                            <div className="font-medium">{booking.user_name}</div>
+                            <div className="text-neutral-400">{booking.user_email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        {booking.properties?.name || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        {new Date(booking.start_date).toLocaleDateString('es-ES')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        {new Date(booking.end_date).toLocaleDateString('es-ES')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          booking.status === 'paid'
+                            ? 'bg-green-900 text-green-200'
+                            : booking.status === 'pending'
+                            ? 'bg-yellow-900 text-yellow-200'
+                            : booking.status === 'request'
+                            ? 'bg-orange-900 text-orange-200'
+                            : 'bg-red-900 text-red-200'
+                        }`}>
+                          {booking.status === 'paid' ? 'Pagado' :
+                           booking.status === 'pending' ? 'Pendiente' :
+                           booking.status === 'request' ? 'Solicitud' : 'Cancelado'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        <div className="flex items-center gap-2">
+                          <span>${booking.amount}</span>
+                          {booking.status === 'request' && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleBookingAction(booking.id, 'pending')}
+                                className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                              >
+                                ✓
+                              </button>
+                              <button
+                                onClick={() => handleBookingAction(booking.id, 'cancelled')}
+                                className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                              >
+                                ✗
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!bookings || bookings.length === 0) && (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-4 text-center text-neutral-400">
+                        No hay reservas registradas
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </main>

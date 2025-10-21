@@ -67,12 +67,20 @@ export default function Navbar({ user }: NavbarProps) {
                           {user.user_metadata?.full_name || user.email}
                         </div>
                         <Link
-                          href="/tablero"
+                          href="/dashboard"
                           className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           <LayoutDashboard className="w-4 h-4" />
-                          Tablero
+                          Mis Reservas
+                        </Link>
+                        <Link
+                          href="/favoritos"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <LayoutDashboard className="w-4 h-4" />
+                          Favoritos
                         </Link>
                         <button
                           onClick={() => {

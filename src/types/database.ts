@@ -1,28 +1,23 @@
 export interface Property {
   id: string
-  title: string
+  name: string
   description: string
-  price: number
   location: string
-  bedrooms: number
-  bathrooms: number
-  area: number
-  images: string[]
-  amenities: string[]
-  available: boolean
-  owner_id: string
+  price_per_night: number
+  image_url?: string
   created_at: string
-  updated_at: string
 }
 
 export interface Booking {
   id: string
   property_id: string
-  user_id: string
-  check_in: string
-  check_out: string
-  total_price: number
-  status: 'pending' | 'confirmed' | 'cancelled'
+  user_name: string
+  user_email: string
+  start_date: string
+  end_date: string
+  status: 'pending' | 'paid' | 'cancelled'
+  payment_id?: string
+  amount: number
   created_at: string
 }
 
@@ -32,5 +27,12 @@ export interface User {
   full_name: string
   avatar_url?: string
   phone?: string
+  created_at: string
+}
+
+export interface Favorite {
+  id: string
+  user_id: string
+  property_id: string
   created_at: string
 }

@@ -1,30 +1,30 @@
 -- Crear tabla de propiedades
 CREATE TABLE IF NOT EXISTS properties (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL,
   description TEXT NOT NULL,
-  price DECIMAL(10,2) NOT NULL,
   location VARCHAR(255) NOT NULL,
-  bedrooms INTEGER NOT NULL,
-  bathrooms INTEGER NOT NULL,
-  area DECIMAL(8,2) NOT NULL,
-  images TEXT[] DEFAULT '{}',
-  amenities TEXT[] DEFAULT '{}',
-  available BOOLEAN DEFAULT true,
+  price_per_night DECIMAL(10,2) NOT NULL,
+  image_url VARCHAR(500),
   owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  available BOOLEAN DEFAULT true,
+  bedrooms INTEGER DEFAULT 1,
+  bathrooms INTEGER DEFAULT 1,
+  area INTEGER DEFAULT 50,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Crear tabla de reservas
 CREATE TABLE IF NOT EXISTS bookings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  check_in DATE NOT NULL,
-  check_out DATE NOT NULL,
-  total_price DECIMAL(10,2) NOT NULL,
-  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'cancelled')),
+  user_name VARCHAR(255) NOT NULL,
+  user_email VARCHAR(255) NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'cancelled')),
+  payment_id VARCHAR(255),
+  amount DECIMAL(10,2) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -38,44 +38,41 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Crear tabla de favoritos
+CREATE TABLE IF NOT EXISTS favorites (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, property_id)
+);
+
 -- Habilitar RLS (Row Level Security)
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 
--- Políticas para propiedades
-CREATE POLICY "Los usuarios pueden ver todas las propiedades" ON properties
+-- Políticas para propiedades: lectura pública
+CREATE POLICY "Lectura pública de propiedades" ON properties
   FOR SELECT USING (true);
 
-CREATE POLICY "Los usuarios pueden insertar sus propias propiedades" ON properties
-  FOR INSERT WITH CHECK (auth.uid() = owner_id);
-
-CREATE POLICY "Los usuarios pueden actualizar sus propias propiedades" ON properties
-  FOR UPDATE USING (auth.uid() = owner_id);
-
-CREATE POLICY "Los usuarios pueden eliminar sus propias propiedades" ON properties
-  FOR DELETE USING (auth.uid() = owner_id);
-
--- Políticas para reservas
-CREATE POLICY "Los usuarios pueden ver sus propias reservas" ON bookings
-  FOR SELECT USING (auth.uid() = user_id OR auth.uid() IN (
-    SELECT owner_id FROM properties WHERE id = property_id
-  ));
-
-CREATE POLICY "Los usuarios pueden crear reservas" ON bookings
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Los propietarios pueden actualizar reservas de sus propiedades" ON bookings
-  FOR UPDATE USING (auth.uid() IN (
-    SELECT owner_id FROM properties WHERE id = property_id
-  ));
-
--- Políticas para perfiles
-CREATE POLICY "Los usuarios pueden ver todos los perfiles" ON profiles
+-- Políticas para reservas: lectura pública, inserción con verificación de disponibilidad
+CREATE POLICY "Lectura pública de reservas" ON bookings
   FOR SELECT USING (true);
 
-CREATE POLICY "Los usuarios pueden actualizar su propio perfil" ON profiles
-  FOR ALL USING (auth.uid() = id);
+CREATE POLICY "Inserción de reservas sin superposición de fechas" ON bookings
+  FOR INSERT WITH CHECK (
+    NOT EXISTS (
+      SELECT 1 FROM bookings b
+      WHERE b.property_id = property_id
+        AND b.status != 'cancelled'
+        AND (start_date, end_date) OVERLAPS (b.start_date, b.end_date)
+    )
+  );
+
+-- Políticas para favoritos
+CREATE POLICY "Usuarios pueden gestionar sus propios favoritos" ON favorites
+  FOR ALL USING (auth.uid() = user_id);
 
 -- Función para actualizar updated_at automáticamente
 CREATE OR REPLACE FUNCTION update_updated_at_column()

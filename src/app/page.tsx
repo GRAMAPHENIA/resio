@@ -1,12 +1,39 @@
 
-import { createClient } from "@/lib/supabase/server";
+'use client'
+
+import { useState, useEffect } from 'react'
 import Logo from "@/components/ui/logo";
 import Link from "next/link";
 import { Plus, Calendar, BarChart3, Search, MapPin, Users } from "lucide-react";
+import SearchBar from '@/components/ui/search-bar'
+import PropertyCard from '@/components/ui/property-card'
+import BookingForm from '@/components/ui/booking-form'
+import PaymentModal from '@/components/ui/payment-modal'
+import { Property, Booking } from '@/types/database'
+import { createClient } from '@/lib/supabase/client'
 
-export default async function Home() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+export default function Home() {
+  const [searchResults, setSearchResults] = useState<Property[]>([])
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
+  const [preferenceId, setPreferenceId] = useState<string | null>(null)
+  const [publishedProperties, setPublishedProperties] = useState<Property[]>([])
+  const supabase = createClient()
+
+  useEffect(() => {
+    const fetchPublishedProperties = async () => {
+      const { data: properties, error } = await supabase
+        .from('properties')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(6) // Mostrar las últimas 6 propiedades publicadas
+
+      if (!error && properties) {
+        setPublishedProperties(properties)
+      }
+    }
+
+    fetchPublishedProperties()
+  }, [supabase])
 
   return (
     <div className="min-h-screen bg-background">
@@ -18,57 +45,56 @@ export default async function Home() {
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Gestiona tus propiedades
             </h1>
-            <div className="max-w-5xl mx-auto mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-0">
-                <div className="relative border border-neutral-800">
-                  <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-4 h-4 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="¿Dónde?"
-                    className="w-full pl-4 pr-10 py-4 bg-transparent text-foreground placeholder-neutral-400 focus:outline-none"
-                  />
-                </div>
-                <div className="relative border border-neutral-800 border-l-0">
-                  <label className="absolute left-3 top-2 text-xs text-neutral-400 font-medium">INGRESO</label>
-                  <input
-                    type="date"
-                    className="w-full pt-6 pb-2 pl-3 pr-4 bg-transparent text-foreground focus:outline-none"
-                    style={{
-                      colorScheme: 'dark'
-                    }}
-                  />
-                </div>
-                <div className="relative border border-neutral-800 border-l-0">
-                  <label className="absolute left-3 top-2 text-xs text-neutral-400 font-medium">SALIDA</label>
-                  <input
-                    type="date"
-                    className="w-full pt-6 pb-2 pl-3 pr-4 bg-transparent text-foreground focus:outline-none"
-                    style={{
-                      colorScheme: 'dark'
-                    }}
-                  />
-                </div>
-                <div className="relative border border-neutral-800 border-l-0">
-                  <Users className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-4 h-4 pointer-events-none" />
-                  <select className="w-full pl-4 pr-10 py-4 bg-neutral-900 text-foreground focus:outline-none appearance-none">
-                    <option value="">Personas</option>
-                    <option value="1" className="bg-neutral-900 text-foreground">1 persona</option>
-                    <option value="2" className="bg-neutral-900 text-foreground">2 personas</option>
-                    <option value="3" className="bg-neutral-900 text-foreground">3 personas</option>
-                    <option value="4" className="bg-neutral-900 text-foreground">4 personas</option>
-                    <option value="5+" className="bg-neutral-900 text-foreground">5+ personas</option>
-                  </select>
-                </div>
-                <button className="bg-foreground text-background px-8 py-4 font-medium hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 border border-neutral-800 border-l-0">
-                  <Search className="w-4 h-4" />
-                  Buscar
-                </button>
-              </div>
+            <div className="max-w-4xl mx-auto mb-8">
+              <SearchBar onResults={setSearchResults} />
             </div>
           </div>
 
         </div>
       </section>
+
+      {/* Search Results */}
+      {searchResults.length > 0 && (
+        <section className="py-20 border-t border-neutral-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-bold text-foreground mb-8">Resultados de búsqueda</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {searchResults.map((property) => (
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  onBook={setSelectedProperty}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Published Properties Section */}
+      {publishedProperties.length > 0 && (
+        <section className="py-20 border-t border-neutral-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Propiedades Disponibles
+              </h2>
+              <p className="text-neutral-400">
+                Descubre las mejores opciones de alquiler en nuestro catálogo
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {publishedProperties.map((property) => (
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  onBook={setSelectedProperty}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Features Section */}
       <section className="py-20 border-t border-neutral-800">
@@ -142,6 +168,25 @@ export default async function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Modals */}
+      {selectedProperty && (
+        <BookingForm
+          property={selectedProperty}
+          onClose={() => setSelectedProperty(null)}
+          onSuccess={(id) => {
+            setPreferenceId(id)
+            setSelectedProperty(null)
+          }}
+        />
+      )}
+
+      {preferenceId && (
+        <PaymentModal
+          preferenceId={preferenceId}
+          onClose={() => setPreferenceId(null)}
+        />
+      )}
     </div>
   );
 }

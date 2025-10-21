@@ -19,7 +19,7 @@ export default async function PropertiesPage() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching properties:', error)
+    console.error('Error fetching properties:', error.message || error)
   }
 
   return (
