@@ -39,7 +39,7 @@ export class AuthService {
     return data
   }
 
-  async signInWithGoogle(redirectTo: string = '/tablero') {
+  async signInWithGoogle(redirectTo: string = '/') {
     const { data, error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -70,7 +70,7 @@ export class AuthService {
   }
 
   // Verificar si un usuario ya existe antes de permitir login con Google
-  async checkUserExists(email: string) {
+  async checkUserExists() {
     // Esta función requeriría una función de base de datos personalizada
     // Por ahora, Google OAuth creará automáticamente el usuario si no existe
     return true

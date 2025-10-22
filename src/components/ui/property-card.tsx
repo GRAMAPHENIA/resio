@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Property } from '@/types/database'
 import { useAuth } from '@/hooks/useAuth'
 import { Heart, Calendar, MapPin, Users, Bath, Square } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 interface PropertyCardProps {
@@ -19,13 +19,7 @@ export default function PropertyCard({ property, onBook }: PropertyCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const supabase = createClient()
 
-  useEffect(() => {
-    if (user) {
-      checkIfFavorite()
-    }
-  }, [user, property.id])
-
-  const checkIfFavorite = async () => {
+  const checkIfFavorite = useCallback(async () => {
     if (!user) return
 
     const { data } = await supabase
@@ -36,7 +30,13 @@ export default function PropertyCard({ property, onBook }: PropertyCardProps) {
       .single()
 
     setIsFavorite(!!data)
-  }
+  }, [user, property.id, supabase])
+
+  useEffect(() => {
+    if (user) {
+      checkIfFavorite()
+    }
+  }, [user, checkIfFavorite])
 
   const toggleFavorite = async () => {
     if (!user) {

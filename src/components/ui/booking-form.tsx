@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Property, Booking } from '@/types/database'
-import { Calendar, X, CheckCircle } from 'lucide-react'
+import { Calendar, X } from 'lucide-react'
 
 interface BookingFormProps {
   property: Property
@@ -32,7 +32,7 @@ export default function BookingForm({ property, onClose, onSuccess }: BookingFor
 
     // Load booked dates for this property
     loadBookedDates()
-  }, [property.id])
+  }, [property.id, loadBookedDates])
 
   useEffect(() => {
     // Calculate amount when dates change
@@ -46,7 +46,7 @@ export default function BookingForm({ property, onClose, onSuccess }: BookingFor
     }
   }, [formData.start_date, formData.end_date, property.price_per_night])
 
-  const loadBookedDates = async () => {
+  const loadBookedDates = useCallback(async () => {
     const supabase = createClient()
     const { data: bookings } = await supabase
       .from('bookings')
@@ -57,15 +57,7 @@ export default function BookingForm({ property, onClose, onSuccess }: BookingFor
     if (bookings) {
       setBookedDates(bookings)
     }
-  }
-
-  const isDateBooked = (date: Date) => {
-    return bookedDates.some(booking => {
-      const start = new Date(booking.start_date)
-      const end = new Date(booking.end_date)
-      return date >= start && date <= end
-    })
-  }
+  }, [property.id])
 
   const handleDateSelect = (startDate: string, endDate: string) => {
     setFormData(prev => ({

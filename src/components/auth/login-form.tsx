@@ -24,7 +24,7 @@ export default function LoginForm() {
 
     try {
       await authService.signInWithEmail(formData.email, formData.password)
-      window.location.href = '/tablero'
+      window.location.href = '/'
     } catch (error: any) {
       setError(error.message || 'Error al iniciar sesión')
     } finally {
@@ -37,7 +37,7 @@ export default function LoginForm() {
     setError('')
     
     try {
-      await authService.signInWithGoogle('/tablero')
+      await authService.signInWithGoogle('/')
     } catch (error: any) {
       setError('Error al iniciar sesión con Google')
     } finally {

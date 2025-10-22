@@ -70,7 +70,7 @@ export default function Welcome({ user }: WelcomeProps) {
         </div>
 
         <Link
-          href="/tablero"
+          href="/"
           className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3 text-lg font-medium hover:bg-neutral-200 transition-colors"
         >
           <LayoutDashboard className="w-5 h-5" />
