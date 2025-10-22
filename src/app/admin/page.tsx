@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Logo from '@/components/ui/logo'
-import { LogIn, Mail, Lock, Home } from 'lucide-react'
+import { LogIn, Home } from 'lucide-react'
 
 export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false)

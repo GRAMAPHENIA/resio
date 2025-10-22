@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Property, Booking } from '@/types/database'
-import { Home, Users, Calendar, TrendingUp, Database, Settings, LogOut, Plus, Eye, EyeOff, Edit, Trash2, X } from 'lucide-react'
+import { Home, Users, Calendar, TrendingUp, Database, LogOut, Plus, Eye, EyeOff, Edit, Trash2, X } from 'lucide-react'
 import Notification from '@/components/ui/notification'
 
 export default function AdminDashboard() {
@@ -34,7 +34,7 @@ export default function AdminDashboard() {
     }
 
     fetchData()
-  }, [])
+  }, [router])
 
   const fetchData = async () => {
     try {
@@ -472,10 +472,10 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-800">
-                      {bookings.map((booking: any) => (
+                      {bookings.map((booking: Booking) => (
                         <tr key={booking.id} className="hover:bg-neutral-800/50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                            {booking.properties?.name || 'N/A'}
+                            {properties.find(p => p.id === booking.property_id)?.name || 'N/A'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             <div>
