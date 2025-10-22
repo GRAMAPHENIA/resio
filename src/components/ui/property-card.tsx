@@ -1,9 +1,10 @@
 'use client'
 
+
 import Image from 'next/image'
 import { Property } from '@/types/database'
 import { useAuth } from '@/hooks/useAuth'
-import { Heart, Calendar } from 'lucide-react'
+import { Heart, Calendar, MapPin, Users, Bath, Square } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -73,18 +74,18 @@ export default function PropertyCard({ property, onBook }: PropertyCardProps) {
 
   return (
     <div className="bg-neutral-900 border border-neutral-800 p-6">
-      {property.image_url && (
+      {property.images && property.images.length > 0 && (
         <div className="relative h-48 mb-4">
           <Image
-            src={property.image_url}
+            src={property.images[0]}
             alt={property.name}
             fill
-            className="object-cover rounded"
+            className="object-cover"
           />
           <button
             onClick={toggleFavorite}
             disabled={isLoading}
-            className="absolute top-3 right-3 p-2 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+            className="absolute top-3 right-3 p-2 bg-black/50 hover:bg-black/70 transition-colors"
           >
             <Heart
               className={`w-5 h-5 ${isFavorite ? 'fill-foreground text-foreground' : 'text-white'}`}
@@ -93,8 +94,28 @@ export default function PropertyCard({ property, onBook }: PropertyCardProps) {
         </div>
       )}
       <h3 className="text-xl font-semibold text-foreground mb-2">{property.name}</h3>
-      <p className="text-neutral-400 mb-2">{property.location}</p>
+
+      <div className="flex items-center gap-1 text-neutral-400 mb-2">
+        <MapPin className="w-4 h-4" />
+        <span className="text-sm">{property.location}</span>
+      </div>
+
       <p className="text-neutral-400 mb-4 line-clamp-2">{property.description}</p>
+
+      <div className="flex items-center gap-4 mb-4 text-sm text-neutral-400">
+        <div className="flex items-center gap-1">
+          <Users className="w-4 h-4" />
+          <span>{property.bedrooms} hab</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Bath className="w-4 h-4" />
+          <span>{property.bathrooms} baño</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Square className="w-4 h-4" />
+          <span>{property.area} m²</span>
+        </div>
+      </div>
       <div className="flex justify-between items-center">
         {user ? (
           <>

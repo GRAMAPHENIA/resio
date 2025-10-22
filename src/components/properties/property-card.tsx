@@ -73,11 +73,19 @@ export default function PropertyCard({ property, onBook }: PropertyCardProps) {
   return (
     <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
       <div className="relative h-48 bg-neutral-800 flex items-center justify-center">
-        <span className="text-neutral-500">Sin imagen</span>
+        {property.images && property.images.length > 0 ? (
+          <img
+            src={property.images[0]}
+            alt={property.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="text-neutral-500">Sin imagen</span>
+        )}
         <button
           onClick={toggleFavorite}
           disabled={isLoading}
-          className="absolute top-3 right-3 p-2 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+          className="absolute top-3 right-3 p-2 bg-black/50 hover:bg-black/70 transition-colors"
         >
           <Heart
             className={`w-5 h-5 ${isFavorite ? 'fill-foreground text-foreground' : 'text-white'}`}

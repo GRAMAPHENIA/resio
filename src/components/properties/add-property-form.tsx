@@ -3,10 +3,12 @@
 import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, ArrowLeft, Save } from 'lucide-react'
+import { Plus, ArrowLeft, Save, Upload, X } from 'lucide-react'
 
 export default function AddPropertyForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const [images, setImages] = useState<File[]>([])
+  const [imageUrls, setImageUrls] = useState<string[]>([])
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -20,6 +22,47 @@ export default function AddPropertyForm() {
 
   const router = useRouter()
   const supabase = createClient()
+
+  const handleImageUpload = async (files: FileList) => {
+    const newImages = Array.from(files)
+    setImages(prev => [...prev, ...newImages])
+
+    // Subir imágenes a Supabase Storage
+    const uploadedUrls: string[] = []
+    for (const file of newImages) {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+      const filePath = `properties/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('property-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError)
+        alert(`Error al subir imagen: ${uploadError.message}`)
+        continue
+      }
+
+      const { data } = supabase.storage
+        .from('property-images')
+        .getPublicUrl(filePath)
+
+      if (data?.publicUrl) {
+        uploadedUrls.push(data.publicUrl)
+      }
+    }
+
+    setImageUrls(prev => [...prev, ...uploadedUrls])
+  }
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index))
+    setImageUrls(prev => prev.filter((_, i) => i !== index))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,6 +84,7 @@ export default function AddPropertyForm() {
              bedrooms: parseInt(formData.bedrooms),
              bathrooms: parseInt(formData.bathrooms),
              area: parseInt(formData.area),
+             images: imageUrls,
              owner_id: null, // Admin crea propiedades sin owner específico
              available: false // Inicia como no publicada
            })
@@ -62,6 +106,7 @@ export default function AddPropertyForm() {
             bedrooms: parseInt(formData.bedrooms),
             bathrooms: parseInt(formData.bathrooms),
             area: parseInt(formData.area),
+            images: imageUrls,
             owner_id: user.id,
             available: false // Inicia como no publicada
           })
@@ -197,6 +242,50 @@ export default function AddPropertyForm() {
                 min="1"
                 className="w-full bg-neutral-900 border border-neutral-800 text-foreground px-3 py-2 focus:outline-none focus:border-foreground"
               />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-foreground text-sm font-medium mb-2">
+              Fotos de la propiedad
+            </label>
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-neutral-600 p-6 text-center">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <label htmlFor="image-upload" className="cursor-pointer">
+                  <Upload className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+                  <p className="text-neutral-400">Haz clic para subir fotos</p>
+                  <p className="text-sm text-neutral-500">PNG, JPG, GIF hasta 10MB</p>
+                </label>
+              </div>
+
+              {imageUrls.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {imageUrls.map((url, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={url}
+                        alt={`Foto ${index + 1}`}
+                        className="w-full h-24 object-cover border border-neutral-600"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 bg-red-600 text-white p-1 hover:bg-red-700"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

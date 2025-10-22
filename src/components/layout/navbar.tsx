@@ -6,7 +6,7 @@ import { User } from '@supabase/supabase-js'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
-import { LayoutDashboard, LogOut, LogIn, UserPlus, ChevronDown } from 'lucide-react'
+import { Calendar, Heart, LogOut, LogIn, UserPlus, ChevronDown } from 'lucide-react'
 
 interface NavbarProps {
   user: User | null
@@ -71,7 +71,7 @@ export default function Navbar({ user }: NavbarProps) {
                           className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <LayoutDashboard className="w-4 h-4" />
+                          <Calendar className="w-4 h-4" />
                           Mis Reservas
                         </Link>
                         <Link
@@ -79,7 +79,7 @@ export default function Navbar({ user }: NavbarProps) {
                           className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <LayoutDashboard className="w-4 h-4" />
+                          <Heart className="w-4 h-4" />
                           Favoritos
                         </Link>
                         <button

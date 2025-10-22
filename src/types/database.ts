@@ -4,7 +4,7 @@ export interface Property {
   description: string
   location: string
   price_per_night: number
-  image_url?: string
+  images: string[]
   owner_id: string
   available: boolean
   bedrooms: number

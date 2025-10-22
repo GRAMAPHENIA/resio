@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Property, Booking } from '@/types/database'
-import { Home, Users, Calendar, TrendingUp, Database, Settings, LogOut, Plus } from 'lucide-react'
+import { Home, Users, Calendar, TrendingUp, Database, Settings, LogOut, Plus, Eye, EyeOff, Edit, Trash2, X } from 'lucide-react'
 import Notification from '@/components/ui/notification'
 
 export default function AdminDashboard() {
@@ -230,7 +230,7 @@ export default function AdminDashboard() {
                   Agregar Propiedad
                 </button>
               </div>
-              <div className="bg-neutral-900 border border-neutral-800 rounded-lg overflow-hidden">
+              <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-neutral-800">
@@ -239,8 +239,8 @@ export default function AdminDashboard() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Ubicación</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Precio</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Estado</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Dueño</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Reservas</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Acciones</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-800">
@@ -252,24 +252,73 @@ export default function AdminDashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{property.location}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">${property.price_per_night}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold ${
                                   property.available ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                                 }`}>
                                   {property.available ? 'Publicada' : 'Borrador'}
                                 </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{property.owner_id}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                               <div className="flex items-center gap-2">
                                 <span>{propertyBookings.length}</span>
                                 {propertyBookings.length > 0 && (
                                   <button
                                     onClick={() => setSelectedProperty(property)}
-                                    className="px-2 py-1 text-xs bg-foreground text-background rounded hover:bg-neutral-200"
+                                    className="px-2 py-1 text-xs bg-foreground text-background hover:bg-neutral-200"
                                   >
                                     Ver calendario
                                   </button>
                                 )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => {
+                                    // Toggle available status
+                                    const newAvailable = !property.available
+                                    const supabase = createClient()
+                                    supabase
+                                      .from('properties')
+                                      .update({ available: newAvailable })
+                                      .eq('id', property.id)
+                                      .then(({ error }) => {
+                                        if (error) {
+                                          setNotification({
+                                            message: 'Error al actualizar el estado',
+                                            type: 'error'
+                                          })
+                                        } else {
+                                          setProperties(prev => prev.map(p =>
+                                            p.id === property.id ? { ...p, available: newAvailable } : p
+                                          ))
+                                          setNotification({
+                                            message: `Propiedad ${newAvailable ? 'publicada' : 'despublicada'} exitosamente`,
+                                            type: 'success'
+                                          })
+                                        }
+                                      })
+                                  }}
+                                  className={`px-2 py-1 text-xs ${
+                                    property.available
+                                      ? 'bg-yellow-500/5 text-yellow-400 hover:bg-yellow-500/10'
+                                      : 'bg-green-500/5 text-green-400 hover:bg-green-500/10'
+                                  }`}
+                                >
+                                  {property.available ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    // Edit functionality - for now just show notification
+                                    setNotification({
+                                      message: 'Funcionalidad de edición próximamente',
+                                      type: 'info'
+                                    })
+                                  }}
+                                  className="px-2 py-1 text-xs bg-blue-500/5 text-blue-400 hover:bg-blue-500/10"
+                                >
+                                  <Edit className="w-3 h-3" />
+                                </button>
                                 <button
                                   onClick={async () => {
                                     try {
@@ -356,9 +405,9 @@ export default function AdminDashboard() {
                                       })
                                     }
                                   }}
-                                  className="px-2 py-1 text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded hover:bg-red-200 dark:hover:bg-red-800"
+                                  className="px-2 py-1 text-xs bg-red-500/5 text-red-400 hover:bg-red-500/10"
                                 >
-                                  Eliminar
+                                  <Trash2 className="w-3 h-3" />
                                 </button>
                               </div>
                             </td>
@@ -367,7 +416,7 @@ export default function AdminDashboard() {
                       })}
                       {properties.length === 0 && (
                         <tr>
-                          <td colSpan={6} className="px-6 py-4 text-center text-neutral-400">
+                          <td colSpan={7} className="px-6 py-4 text-center text-neutral-400">
                             No hay propiedades registradas
                           </td>
                         </tr>
@@ -382,7 +431,7 @@ export default function AdminDashboard() {
           {activeTab === 'users' && (
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-8">Gestión de Usuarios</h2>
-              <div className="bg-neutral-900 border border-neutral-800 rounded-lg overflow-hidden">
+              <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-neutral-800">
@@ -410,7 +459,7 @@ export default function AdminDashboard() {
           {activeTab === 'bookings' && (
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-8">Gestión de Reservas</h2>
-              <div className="bg-neutral-900 border border-neutral-800 rounded-lg overflow-hidden">
+              <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-neutral-800">
@@ -476,9 +525,9 @@ export default function AdminDashboard() {
               </h2>
               <button
                 onClick={() => setSelectedProperty(null)}
-                className="p-1 hover:bg-neutral-800 rounded"
+                className="p-1 hover:bg-neutral-800"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -488,13 +537,13 @@ export default function AdminDashboard() {
                 <p>Precio por noche: ${selectedProperty.price_per_night}</p>
               </div>
 
-              <div className="bg-neutral-800 p-4 rounded-lg">
+              <div className="bg-neutral-800 p-4">
                 <h3 className="text-lg font-medium text-foreground mb-4">Reservas Confirmadas</h3>
                 <div className="space-y-3">
                   {bookings
                     .filter(b => b.property_id === selectedProperty.id && b.status === 'paid')
                     .map((booking) => (
-                      <div key={booking.id} className="bg-neutral-700 p-3 rounded border border-neutral-600">
+                      <div key={booking.id} className="bg-neutral-700 p-3 border border-neutral-600">
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="font-medium text-foreground">{booking.user_name}</div>
