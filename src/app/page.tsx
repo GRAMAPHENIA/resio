@@ -163,8 +163,16 @@ export default function Home() {
             <div className="mb-4 md:mb-0">
               <Logo />
             </div>
-            <div className="text-neutral-400 text-sm">
-              © 2025 RE/SIO. Plataforma de gestión de propiedades.
+            <div className="flex items-center gap-4">
+              <div className="text-neutral-400 text-sm">
+                © 2025 RE/SIO. Plataforma de gestión de propiedades.
+              </div>
+              <Link
+                href="/admin"
+                className="text-xs text-neutral-500 hover:text-neutral-400 transition-colors"
+              >
+                v0.1.0
+              </Link>
             </div>
           </div>
         </div>
