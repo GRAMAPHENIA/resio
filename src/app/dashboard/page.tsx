@@ -1,8 +1,11 @@
+'use client'
+
 import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect } from 'react'
+import { User } from '@supabase/supabase-js'
 
 export default function DashboardPage() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     const supabase = createClient()

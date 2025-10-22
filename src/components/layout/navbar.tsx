@@ -17,11 +17,6 @@ export default function Navbar({ user }: NavbarProps) {
   const authService = new AuthService()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  // Hide navbar for admin routes
-  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
-    return null
-  }
-
   const handleLogout = async () => {
     try {
       await authService.signOut()
