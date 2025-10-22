@@ -118,10 +118,9 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Database className="w-8 h-8 text-foreground" />
-            <h1 className="text-2xl font-bold text-foreground">Panel de Administración</h1>
+            <h1 className="text-xl font-bold text-neutral-500">RESIO</h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-neutral-400">Admin</span>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-4 py-2 text-sm bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
@@ -180,14 +179,14 @@ export default function AdminDashboard() {
         <div className="flex-1 p-6">
           {activeTab === 'overview' && (
             <div>
-              <h2 className="text-3xl font-bold text-foreground mb-8">Resumen del Sistema</h2>
+              <h2 className="text-3xl font-bold text-foreground mb-8">Sistema</h2>
 
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-neutral-900 p-6 border border-neutral-800">
                   <div className="flex items-center gap-3 mb-2">
                     <Home className="w-5 h-5 text-foreground" />
-                    <h3 className="text-lg font-semibold text-foreground">Total Propiedades</h3>
+                    <h3 className="text-lg font-semibold text-foreground">Propiedades</h3>
                   </div>
                   <p className="text-3xl font-bold text-foreground">{stats.totalProperties}</p>
                 </div>
@@ -195,7 +194,7 @@ export default function AdminDashboard() {
                 <div className="bg-neutral-900 p-6 border border-neutral-800">
                   <div className="flex items-center gap-3 mb-2">
                     <Users className="w-5 h-5 text-foreground" />
-                    <h3 className="text-lg font-semibold text-foreground">Total Usuarios</h3>
+                    <h3 className="text-lg font-semibold text-foreground">Usuarios</h3>
                   </div>
                   <p className="text-3xl font-bold text-foreground">{stats.totalUsers}</p>
                 </div>
@@ -203,7 +202,7 @@ export default function AdminDashboard() {
                 <div className="bg-neutral-900 p-6 border border-neutral-800">
                   <div className="flex items-center gap-3 mb-2">
                     <Calendar className="w-5 h-5 text-foreground" />
-                    <h3 className="text-lg font-semibold text-foreground">Total Reservas</h3>
+                    <h3 className="text-lg font-semibold text-foreground">Reservas</h3>
                   </div>
                   <p className="text-3xl font-bold text-foreground">{stats.totalBookings}</p>
                 </div>
@@ -211,7 +210,7 @@ export default function AdminDashboard() {
                 <div className="bg-neutral-900 p-6 border border-neutral-800">
                   <div className="flex items-center gap-3 mb-2">
                     <TrendingUp className="w-5 h-5 text-foreground" />
-                    <h3 className="text-lg font-semibold text-foreground">Ingresos Totales</h3>
+                    <h3 className="text-lg font-semibold text-foreground">Ingresos</h3>
                   </div>
                   <p className="text-3xl font-bold text-foreground">${stats.totalRevenue}</p>
                 </div>

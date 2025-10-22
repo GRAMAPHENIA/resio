@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import Logo from '@/components/ui/logo'
-import { LogIn, Mail, Lock } from 'lucide-react'
+import { LogIn, Mail, Lock, Home } from 'lucide-react'
 
 export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -99,6 +100,16 @@ export default function AdminLoginPage() {
             {isLoading ? 'Iniciando sesión...' : 'Acceder'}
           </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            Volver al inicio
+          </Link>
+        </div>
         </div>
       </div>
     </div>
