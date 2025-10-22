@@ -1,10 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #121213; 
-  --foreground: #ffcf32; 
-  
-  
+  --background: #121213;
+  --foreground: #ffcf32;
+
+  /* Paleta de colores consistente */
+  --primary: #ffcf32;      /* Amarillo principal */
+  --primary-dark: #e6b82e; /* Amarillo oscuro */
+  --primary-light: #ffe066; /* Amarillo claro */
+
+  --secondary: #2a2a2c;    /* Gris oscuro */
+  --secondary-light: #3a3a3c; /* Gris medio */
+
+  --accent: #4a4a4c;       /* Gris claro para acentos */
+  --accent-light: #5a5a5c; /* Gris más claro */
+
+  --success: #10b981;     /* Verde para éxito */
+  --success-dark: #059669; /* Verde oscuro */
+
+  --error: #ef4444;       /* Rojo para errores */
+  --error-dark: #dc2626;  /* Rojo oscuro */
+
+  --warning: #f59e0b;     /* Naranja para advertencias */
+  --warning-dark: #d97706; /* Naranja oscuro */
+
+  --info: #3b82f6;        /* Azul para información */
+  --info-dark: #2563eb;   /* Azul oscuro */
+
+  /* Gradientes */
+  --gradient-primary: linear-gradient(135deg, #ffcf32 0%, #e6b82e 100%);
+  --gradient-secondary: linear-gradient(135deg, #2a2a2c 0%, #3a3a3c 100%);
 }
 
 @theme inline {

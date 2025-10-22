@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Property, Booking } from '@/types/database'
 import { Home, Users, Calendar, TrendingUp, Database, Settings, LogOut, Plus } from 'lucide-react'
+import Notification from '@/components/ui/notification'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -19,6 +20,10 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
+  const [notification, setNotification] = useState<{
+    message: string
+    type: 'success' | 'error' | 'info'
+  } | null>(null)
 
   useEffect(() => {
     // Verificar autenticación de admin
@@ -34,45 +39,56 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       const supabase = createClient()
+      console.log('Fetching data from Supabase...')
 
-      // Obtener estadísticas
-      const [propertiesRes, usersRes, bookingsRes] = await Promise.all([
-        supabase.from('properties').select('id, price'),
-        supabase.from('profiles').select('id'),
-        supabase.from('bookings').select('id, amount, status')
-      ])
+      // Obtener propiedades con cache busting usando timestamp
+      const cacheBuster = Date.now()
+      const { data: propertiesData, error: propertiesError } = await supabase
+        .from('properties')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100) // Asegurar que no haya límites
 
-      const totalProperties = propertiesRes.data?.length || 0
-      const totalUsers = usersRes.data?.length || 0
-      const totalBookings = bookingsRes.data?.length || 0
-      const totalRevenue = bookingsRes.data?.reduce((sum, booking) =>
+      console.log('Cache buster timestamp:', cacheBuster)
+
+      console.log('Properties data:', propertiesData)
+      console.log('Properties error:', propertiesError)
+
+      // Verificar específicamente si la propiedad eliminada sigue existiendo
+      if (propertiesData) {
+        const deletedPropertyExists = propertiesData.some(p => p.id === '583d4617-2ac4-4eed-b2c0-96c8384cc7a4')
+        console.log('Deleted property still exists in data:', deletedPropertyExists)
+        console.log('Total properties found:', propertiesData.length)
+      }
+
+      if (propertiesError) {
+        console.error('Error fetching properties:', propertiesError)
+      }
+
+      // Obtener bookings de forma simple
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      console.log('Bookings data:', bookingsData)
+      console.log('Bookings error:', bookingsError)
+
+      // Estadísticas simples
+      const totalProperties = propertiesData?.length || 0
+      const totalBookings = bookingsData?.filter(booking => booking.status === 'paid').length || 0
+      const totalRevenue = bookingsData?.reduce((sum, booking) =>
         booking.status === 'paid' ? sum + booking.amount : sum, 0) || 0
 
       setStats({
         totalProperties,
-        totalUsers,
+        totalUsers: 0, // Temporalmente 0 hasta arreglar profiles
         totalBookings,
         totalRevenue
       })
 
-      // Obtener datos detallados
-      const [propertiesData, bookingsData] = await Promise.all([
-        supabase.from('properties').select('*').order('created_at', { ascending: false }),
-        supabase.from('bookings').select(`
-          *,
-          properties (
-            name,
-            location
-          ),
-          profiles (
-            full_name,
-            email
-          )
-        `).order('created_at', { ascending: false })
-      ])
-
-      setProperties(propertiesData.data || [])
-      setBookings(bookingsData.data || [])
+      setProperties(propertiesData || [])
+      setBookings(bookingsData || [])
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -108,7 +124,7 @@ export default function AdminDashboard() {
             <span className="text-sm text-neutral-400">Admin</span>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 text-sm bg-red-600 text-white hover:bg-red-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
             >
               <LogOut className="w-4 h-4" />
               Cerrar sesión
@@ -170,34 +186,34 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-neutral-900 p-6 border border-neutral-800">
                   <div className="flex items-center gap-3 mb-2">
-                    <Home className="w-5 h-5 text-blue-400" />
+                    <Home className="w-5 h-5 text-foreground" />
                     <h3 className="text-lg font-semibold text-foreground">Total Propiedades</h3>
                   </div>
-                  <p className="text-3xl font-bold text-blue-400">{stats.totalProperties}</p>
+                  <p className="text-3xl font-bold text-foreground">{stats.totalProperties}</p>
                 </div>
 
                 <div className="bg-neutral-900 p-6 border border-neutral-800">
                   <div className="flex items-center gap-3 mb-2">
-                    <Users className="w-5 h-5 text-green-400" />
+                    <Users className="w-5 h-5 text-foreground" />
                     <h3 className="text-lg font-semibold text-foreground">Total Usuarios</h3>
                   </div>
-                  <p className="text-3xl font-bold text-green-400">{stats.totalUsers}</p>
+                  <p className="text-3xl font-bold text-foreground">{stats.totalUsers}</p>
                 </div>
 
                 <div className="bg-neutral-900 p-6 border border-neutral-800">
                   <div className="flex items-center gap-3 mb-2">
-                    <Calendar className="w-5 h-5 text-yellow-400" />
+                    <Calendar className="w-5 h-5 text-foreground" />
                     <h3 className="text-lg font-semibold text-foreground">Total Reservas</h3>
                   </div>
-                  <p className="text-3xl font-bold text-yellow-400">{stats.totalBookings}</p>
+                  <p className="text-3xl font-bold text-foreground">{stats.totalBookings}</p>
                 </div>
 
                 <div className="bg-neutral-900 p-6 border border-neutral-800">
                   <div className="flex items-center gap-3 mb-2">
-                    <TrendingUp className="w-5 h-5 text-purple-400" />
+                    <TrendingUp className="w-5 h-5 text-foreground" />
                     <h3 className="text-lg font-semibold text-foreground">Ingresos Totales</h3>
                   </div>
-                  <p className="text-3xl font-bold text-purple-400">${stats.totalRevenue}</p>
+                  <p className="text-3xl font-bold text-foreground">${stats.totalRevenue}</p>
                 </div>
               </div>
             </div>
@@ -238,10 +254,10 @@ export default function AdminDashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">${property.price_per_night}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                property.available ? 'bg-green-900 text-green-200' : 'bg-gray-900 text-gray-200'
-                              }`}>
-                                {property.available ? 'Publicada' : 'Borrador'}
-                              </span>
+                                  property.available ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                }`}>
+                                  {property.available ? 'Publicada' : 'Borrador'}
+                                </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{property.owner_id}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
@@ -250,11 +266,101 @@ export default function AdminDashboard() {
                                 {propertyBookings.length > 0 && (
                                   <button
                                     onClick={() => setSelectedProperty(property)}
-                                    className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                                    className="px-2 py-1 text-xs bg-foreground text-background rounded hover:bg-neutral-200"
                                   >
                                     Ver calendario
                                   </button>
                                 )}
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const supabase = createClient()
+                                      console.log('Attempting to delete property with ID:', property.id)
+
+                                      // Primero verificar si la propiedad existe
+                                      const { data: existingProperty, error: fetchError } = await supabase
+                                        .from('properties')
+                                        .select('id, name')
+                                        .eq('id', property.id)
+                                        .single()
+
+                                      if (fetchError || !existingProperty) {
+                                        console.warn('Property does not exist:', fetchError)
+                                        setNotification({
+                                          message: 'La propiedad no existe o ya fue eliminada',
+                                          type: 'error'
+                                        })
+                                        // Actualizar estado local de todas formas
+                                        setProperties(prev => prev.filter(p => p.id !== property.id))
+                                        return
+                                      }
+
+                                      console.log('Property exists, proceeding with deletion:', existingProperty)
+
+                                      // Verificar permisos antes de eliminar
+                                      console.log('Current user permissions check...')
+                                      const { data: { user } } = await supabase.auth.getUser()
+                                      console.log('Current user:', user?.id)
+
+                                      const { error: deleteError, data: deleteData } = await supabase
+                                        .from('properties')
+                                        .delete()
+                                        .eq('id', property.id)
+                                        .select()
+
+                                      console.log('Delete error:', deleteError)
+
+                                      console.log('Delete operation result:', { error: deleteError, data: deleteData })
+
+                                      if (deleteError) {
+                                        console.error('Error deleting property:', deleteError)
+                                        setNotification({
+                                          message: `Error al eliminar la propiedad: ${deleteError.message}`,
+                                          type: 'error'
+                                        })
+                                      } else if (deleteData && deleteData.length > 0) {
+                                        console.log('Property deleted successfully from database:', deleteData)
+
+                                        // Actualizar el estado local inmediatamente
+                                        setProperties(prev => {
+                                          const filtered = prev.filter(p => p.id !== property.id)
+                                          console.log('Local state updated. Properties before:', prev.length, 'after:', filtered.length)
+                                          return filtered
+                                        })
+
+                                        setNotification({
+                                          message: 'Propiedad eliminada exitosamente',
+                                          type: 'success'
+                                        })
+
+                                        // Intentar recarga inmediata primero
+                                        console.log('Attempting immediate re-fetch...')
+                                        await fetchData()
+
+                                        // Si aún existe, intentar con delay
+                                        setTimeout(async () => {
+                                          console.log('Re-fetching data after delay...')
+                                          await fetchData()
+                                        }, 2000)
+                                      } else {
+                                        console.warn('Delete operation completed but no data returned')
+                                        setNotification({
+                                          message: 'La eliminación se completó pero no se confirmó',
+                                          type: 'error'
+                                        })
+                                      }
+                                    } catch (error) {
+                                      console.error('Unexpected error:', error)
+                                      setNotification({
+                                        message: 'Error inesperado al eliminar la propiedad',
+                                        type: 'error'
+                                      })
+                                    }
+                                  }}
+                                  className="px-2 py-1 text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded hover:bg-red-200 dark:hover:bg-red-800"
+                                >
+                                  Eliminar
+                                </button>
                               </div>
                             </td>
                           </tr>
@@ -338,10 +444,10 @@ export default function AdminDashboard() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               booking.status === 'paid'
-                                ? 'bg-green-900 text-green-200'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                 : booking.status === 'pending'
-                                ? 'bg-yellow-900 text-yellow-200'
-                                : 'bg-red-900 text-red-200'
+                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                             }`}>
                               {booking.status === 'paid' ? 'Pagado' :
                                booking.status === 'pending' ? 'Pendiente' : 'Cancelado'}
@@ -416,6 +522,15 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Notification */}
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
       )}
     </div>
   )

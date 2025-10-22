@@ -32,18 +32,18 @@ export default function AddPropertyForm() {
       if (isAdminLoggedIn) {
         // Admin puede crear propiedades directamente
         const { error } = await supabase
-          .from('properties')
-          .insert({
-            name: formData.title,
-            description: formData.description,
-            price_per_night: parseFloat(formData.price),
-            location: formData.location,
-            bedrooms: parseInt(formData.bedrooms),
-            bathrooms: parseInt(formData.bathrooms),
-            area: parseFloat(formData.area),
-            owner_id: 'admin', // ID especial para admin
-            available: false // Inicia como no publicada
-          })
+           .from('properties')
+           .insert({
+             name: formData.title,
+             description: formData.description,
+             price_per_night: parseFloat(formData.price),
+             location: formData.location,
+             bedrooms: parseInt(formData.bedrooms),
+             bathrooms: parseInt(formData.bathrooms),
+             area: parseInt(formData.area),
+             owner_id: null, // Admin crea propiedades sin owner específico
+             available: false // Inicia como no publicada
+           })
 
         if (error) throw error
         router.push('/admin/dashboard')
@@ -61,7 +61,7 @@ export default function AddPropertyForm() {
             location: formData.location,
             bedrooms: parseInt(formData.bedrooms),
             bathrooms: parseInt(formData.bathrooms),
-            area: parseFloat(formData.area),
+            area: parseInt(formData.area),
             owner_id: user.id,
             available: false // Inicia como no publicada
           })
@@ -69,9 +69,9 @@ export default function AddPropertyForm() {
         if (error) throw error
         router.push('/propiedades')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error)
-      alert('Error al crear la propiedad')
+      alert(`Error al crear la propiedad: ${error.message || 'Error desconocido'}`)
     } finally {
       setIsLoading(false)
     }
