@@ -25,8 +25,9 @@ export default function LoginForm() {
     try {
       await authService.signInWithEmail(formData.email, formData.password)
       window.location.href = '/'
-    } catch (error: any) {
-      setError(error.message || 'Error al iniciar sesión')
+    } catch (error: unknown) {
+      const err = error as Error
+      setError(err.message || 'Error al iniciar sesión')
     } finally {
       setIsLoading(false)
     }
@@ -38,7 +39,7 @@ export default function LoginForm() {
     
     try {
       await authService.signInWithGoogle('/')
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError('Error al iniciar sesión con Google')
     } finally {
       setIsGoogleLoading(false)

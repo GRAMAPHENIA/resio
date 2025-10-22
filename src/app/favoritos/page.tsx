@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import PropertyCard from '@/components/ui/property-card'
 import Link from 'next/link'
 import { Heart, ArrowLeft } from 'lucide-react'
+import { Property } from '@/types/database'
 
 export default async function FavoritosPage() {
   const supabase = await createClient()
@@ -25,7 +26,7 @@ export default async function FavoritosPage() {
     console.error('Error fetching favorites:', error.message || error)
   }
 
-  const favoriteProperties = favorites?.map((fav: any) => fav.properties).filter(Boolean) || []
+  const favoriteProperties: Property[] = (favorites as { properties: Property | null }[] | null)?.map((fav) => fav.properties).filter((prop): prop is Property => prop !== null) || []
 
   return (
     <div className="min-h-screen bg-background py-8">

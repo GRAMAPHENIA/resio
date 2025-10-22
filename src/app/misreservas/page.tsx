@@ -3,9 +3,11 @@
 import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect } from 'react'
 import { Calendar, MapPin, DollarSign } from 'lucide-react'
+import Link from 'next/link'
+import { Booking } from '@/types/database'
 
 export default function MisReservasPage() {
-  const [bookings, setBookings] = useState<any[]>([])
+  const [bookings, setBookings] = useState<(Booking & { properties?: { name?: string; location?: string } })[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export default function MisReservasPage() {
 
         {bookings.length > 0 ? (
           <div className="space-y-6">
-            {bookings.map((booking: any) => (
+            {bookings.map((booking) => (
               <div key={booking.id} className="bg-neutral-900 border border-neutral-800 rounded-lg p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -128,12 +130,12 @@ export default function MisReservasPage() {
             <p className="text-neutral-400 mb-6">
               Explora nuestras propiedades disponibles y realiza tu primera reserva
             </p>
-            <a
+            <Link
               href="/"
               className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 font-medium hover:bg-neutral-200 transition-colors"
             >
               Explorar Propiedades
-            </a>
+            </Link>
           </div>
         )}
       </div>

@@ -23,6 +23,19 @@ export default function BookingForm({ property, onClose, onSuccess }: BookingFor
   const [bookedDates, setBookedDates] = useState<Booking[]>([])
   const [currentStep, setCurrentStep] = useState<'calendar' | 'form'>('calendar')
 
+  const loadBookedDates = useCallback(async () => {
+    const supabase = createClient()
+    const { data: bookings } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('property_id', property.id)
+      .neq('status', 'cancelled')
+
+    if (bookings) {
+      setBookedDates(bookings)
+    }
+  }, [property.id])
+
   useEffect(() => {
     // Load user data from localStorage
     const savedName = localStorage.getItem('user_name')
@@ -46,27 +59,6 @@ export default function BookingForm({ property, onClose, onSuccess }: BookingFor
     }
   }, [formData.start_date, formData.end_date, property.price_per_night])
 
-  const loadBookedDates = useCallback(async () => {
-    const supabase = createClient()
-    const { data: bookings } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('property_id', property.id)
-      .neq('status', 'cancelled')
-
-    if (bookings) {
-      setBookedDates(bookings)
-    }
-  }, [property.id])
-
-  const handleDateSelect = (startDate: string, endDate: string) => {
-    setFormData(prev => ({
-      ...prev,
-      start_date: startDate,
-      end_date: endDate
-    }))
-    setCurrentStep('form')
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

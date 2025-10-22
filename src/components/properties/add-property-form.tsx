@@ -114,9 +114,10 @@ export default function AddPropertyForm() {
         if (error) throw error
         router.push('/propiedades')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error
       console.error('Error:', error)
-      alert(`Error al crear la propiedad: ${error.message || 'Error desconocido'}`)
+      alert(`Error al crear la propiedad: ${err.message || 'Error desconocido'}`)
     } finally {
       setIsLoading(false)
     }

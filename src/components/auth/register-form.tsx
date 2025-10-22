@@ -39,11 +39,12 @@ export default function RegisterForm() {
     try {
       await authService.signUpWithEmail(formData.email, formData.password, formData.fullName)
       window.location.href = '/bienvenida'
-    } catch (error: any) {
-      if (error.message === 'USER_ALREADY_EXISTS') {
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.message === 'USER_ALREADY_EXISTS') {
         setError('ALREADY_REGISTERED')
       } else {
-        setError(error.message || 'Error al crear la cuenta')
+        setError(err.message || 'Error al crear la cuenta')
       }
     } finally {
       setIsLoading(false)
@@ -56,7 +57,7 @@ export default function RegisterForm() {
     
     try {
       await authService.signInWithGoogle('/bienvenida')
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError('Error al registrarse con Google')
     } finally {
       setIsGoogleLoading(false)
