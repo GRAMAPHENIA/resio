@@ -42,12 +42,10 @@ export class AuthService {
   }
 
   async signInWithGoogle(redirectTo: string = '/') {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'https://clienteresio.vercel.app')
-
     const { data, error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${baseUrl}/auth/callback?next=${redirectTo}`
+        redirectTo: `https://clienteresio.vercel.app/auth/callback?next=${redirectTo}`
       }
     })
 
