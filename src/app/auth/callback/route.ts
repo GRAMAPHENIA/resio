@@ -17,7 +17,9 @@ export async function GET(request: Request) {
       } else if (forwardedHost) {
         return NextResponse.redirect(`https://${forwardedHost}${next}`);
       } else {
-        return NextResponse.redirect(`${origin}${next}`);
+        // For production, use the origin but ensure it's the production URL
+        const productionUrl = process.env.NEXT_PUBLIC_SITE_URL || origin;
+        return NextResponse.redirect(`${productionUrl}${next}`);
       }
     }
   }
