@@ -17,6 +17,10 @@ export class AuthService {
   }
 
   async signUpWithEmail(email: string, password: string, fullName: string) {
+    const baseUrl = typeof window !== 'undefined'
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_SITE_URL || 'https://clienteresio.vercel.app'
+
     const { data, error } = await this.supabase.auth.signUp({
       email,
       password,
@@ -24,7 +28,7 @@ export class AuthService {
         data: {
           full_name: fullName
         },
-        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL || 'https://clienteresio.vercel.app'}/auth/callback`
+        emailRedirectTo: `${baseUrl}/auth/callback`
       }
     })
 
@@ -40,10 +44,14 @@ export class AuthService {
   }
 
   async signInWithGoogle(redirectTo: string = '/') {
+    const baseUrl = typeof window !== 'undefined'
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_SITE_URL || 'https://clienteresio.vercel.app'
+
     const { data, error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL || 'https://clienteresio.vercel.app'}/auth/callback?next=${redirectTo}`
+        redirectTo: `${baseUrl}/auth/callback?next=${redirectTo}`
       }
     })
 
