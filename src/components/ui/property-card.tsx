@@ -1,6 +1,5 @@
 'use client'
 
-
 import Image from 'next/image'
 import { Property } from '@/types/database'
 import { useAuth } from '@/hooks/useAuth'
