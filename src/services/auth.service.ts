@@ -24,7 +24,7 @@ export class AuthService {
         data: {
           full_name: fullName
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback`
+        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL || 'https://clienteresio.vercel.app'}/auth/callback`
       }
     })
 
@@ -43,7 +43,7 @@ export class AuthService {
     const { data, error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}`
+        redirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL || 'https://clienteresio.vercel.app'}/auth/callback?next=${redirectTo}`
       }
     })
 
