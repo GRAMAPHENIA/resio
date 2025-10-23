@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
-import { LogIn, Mail, Lock, ArrowLeft } from 'lucide-react'
+import { LogIn, Lock, ArrowLeft } from 'lucide-react'
 
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)

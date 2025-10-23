@@ -4,12 +4,12 @@
 import { useState, useEffect } from 'react'
 import Logo from "@/components/ui/logo";
 import Link from "next/link";
-import { Plus, Calendar, BarChart3, Search, MapPin, Users } from "lucide-react";
+import { Plus, Calendar, BarChart3 } from "lucide-react";
 import SearchBar from '@/components/ui/search-bar'
 import PropertyCard from '@/components/ui/property-card'
 import BookingForm from '@/components/ui/booking-form'
 import PaymentModal from '@/components/ui/payment-modal'
-import { Property, Booking } from '@/types/database'
+import { Property } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 
 export default function Home() {

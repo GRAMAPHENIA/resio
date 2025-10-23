@@ -36,9 +36,9 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Rutas públicas que no requieren autenticación
-  const publicRoutes = ['/', '/registro', '/ingresar']
-  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname) || 
-                       request.nextUrl.pathname.startsWith('/auth')
+  const publicRoutes = ['/', '/registro', '/ingresar', '/admin']
+  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname) ||
+                        request.nextUrl.pathname.startsWith('/auth')
 
   if (!user && !isPublicRoute) {
     // no user, redirect to home page
