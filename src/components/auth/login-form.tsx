@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
 import { LogIn, Lock, ArrowLeft } from 'lucide-react'
 
 export default function LoginForm() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -24,7 +26,8 @@ export default function LoginForm() {
 
     try {
       await authService.signInWithEmail(formData.email, formData.password)
-      window.location.href = '/'
+      router.push('/')
+      router.refresh()
     } catch (error: unknown) {
       const err = error as Error
       setError(err.message || 'Error al iniciar sesión')

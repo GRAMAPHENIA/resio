@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
 import { UserPlus, Mail, Lock, User, ArrowLeft } from 'lucide-react'
 
 export default function RegisterForm() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -38,7 +40,8 @@ export default function RegisterForm() {
 
     try {
       await authService.signUpWithEmail(formData.email, formData.password, formData.fullName)
-      window.location.href = '/bienvenida'
+      router.push('/bienvenida')
+      router.refresh()
     } catch (error: unknown) {
       const err = error as Error
       if (err.message === 'USER_ALREADY_EXISTS') {
