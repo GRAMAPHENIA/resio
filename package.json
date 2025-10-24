@@ -1,6 +1,6 @@
 {
-  "name": "resio",
-  "version": "0.1.0",
+  "name": "resio-alojamientos",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

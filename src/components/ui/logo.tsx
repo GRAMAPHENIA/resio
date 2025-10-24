@@ -12,8 +12,8 @@ export default function Logo({ size = 'md', className = '' }: LogoProps) {
 
   return (
     <div className={`font-bold text-foreground ${sizeClasses[size]} ${className}`}>
-      <span>RE/</span>
-      <span>SIO</span>
+      <span>RESIO</span>
+      <span className="ml-2 text-neutral-600">Alojamientos</span>
     </div>
   )
 }

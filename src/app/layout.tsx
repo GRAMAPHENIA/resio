@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "R⋮SIO",
-  description: "Plataforma de alquiler de propiedades",
+  title: "RESIO Alojamientos - Reserva tu estadía",
+  description: "Encuentra y reserva el alojamiento perfecto para tus vacaciones. Sistema simple y seguro de reservas online.",
 };
 
 export default async function RootLayout({

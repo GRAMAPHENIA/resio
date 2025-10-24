@@ -9,16 +9,6 @@ y este proyecto se adhiere al [Versionado Semántico](https://semver.org/spec/v2
 
 ### Agregado
 
-- Configuración inicial de la aplicación RESIO
-- Autenticación con Google usando Supabase
-- Interfaz básica con botón de login y página principal
-- Estructura del proyecto con Next.js, React y TypeScript
-- Tailwind CSS para estilos
-- CHANGELOG.md para seguimiento de cambios
-- Documentación de componentes principales (LoginButton, ruta auth/callback)
-- Componente Footer minimalista con número de versión y estado alfa
-- Mejora del layout de la página principal con footer
-
 ### Cambiado
 
 ### Obsoleto
@@ -28,6 +18,30 @@ y este proyecto se adhiere al [Versionado Semántico](https://semver.org/spec/v2
 ### Corregido
 
 ### Seguridad
+
+## [0.2.0] - 2025-10-24
+
+### Agregado
+
+- Sistema completo de reservas y pagos
+- Integración con MercadoPago para procesamiento de pagos
+- Formulario de reserva con selección de fechas y cálculo automático de precios
+- Verificación de disponibilidad de propiedades
+- Páginas de resultado de pago (éxito, fallo, pendiente)
+- Dashboard de reservas para usuarios
+- API endpoints para crear preferencias de MercadoPago
+- Webhook para recibir notificaciones de pago
+- Página para explorar propiedades disponibles
+- Página de detalle de propiedad con formulario de reserva
+- Servicio de reservas con gestión de estados
+- Navegación actualizada con acceso a explorar propiedades y reservas
+- Documentación de configuración de MercadoPago (MERCADOPAGO-CONFIG.md)
+
+### Cambiado
+
+- Actualizada la navegación principal con nuevas rutas
+- Mejorada la estructura de la base de datos con tabla de reservas
+- Actualizado README.md con instrucciones de configuración de MercadoPago
 
 ## [0.1.0] - 2025-10-18
 
@@ -41,7 +55,7 @@ y este proyecto se adhiere al [Versionado Semántico](https://semver.org/spec/v2
 
 ## Guía para mantener el REGISTRO DE CAMBIOS
 
-### Tipos de cambios:
+### Tipos de cambios
 
 - **Agregado**: Nuevas funcionalidades
 - **Cambiado**: Cambios en funcionalidades existentes
@@ -50,14 +64,14 @@ y este proyecto se adhiere al [Versionado Semántico](https://semver.org/spec/v2
 - **Corregido**: Corrección de errores
 - **Seguridad**: Cambios relacionados con seguridad
 
-### Proceso para actualizar:
+### Proceso para actualizar
 
 1. Antes de hacer commit de cambios, actualiza la sección [Sin liberar] con los cambios realizados
 2. Al hacer una nueva versión, mueve los cambios de [Sin liberar] a una nueva sección con la versión y fecha
 3. Actualiza el package.json con la nueva versión si es necesario
 4. Haz commit del CHANGELOG.md junto con los cambios del código
 
-### Ejemplo de entrada:
+### Ejemplo de entrada
 
 ```
 ### Agregado

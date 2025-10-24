@@ -34,22 +34,33 @@ Una aplicación minimalista para gestionar propiedades en alquiler, construida c
 6. Agrega las URLs de redirección:
    - `https://tu-proyecto.supabase.co/auth/v1/callback`
 
-### 3. Variables de Entorno
+### 3. Configurar MercadoPago
+
+Sigue las instrucciones en `MERCADOPAGO-CONFIG.md` para obtener tus credenciales.
+
+### 4. Variables de Entorno
 
 Actualiza tu archivo `.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
+
+# MercadoPago
+MP_ACCESS_TOKEN=TEST-tu_access_token
+NEXT_PUBLIC_MP_PUBLIC_KEY=TEST-tu_public_key
+
+# Site URL
+NEXT_PUBLIC_SITE_URL=https://tu-dominio.vercel.app
 ```
 
-### 4. Instalar Dependencias
+### 5. Instalar Dependencias
 
 ```bash
 pnpm install
 ```
 
-### 5. Ejecutar en Desarrollo
+### 6. Ejecutar en Desarrollo
 
 ```bash
 pnpm dev
@@ -100,8 +111,18 @@ src/
 ### Propiedades
 - Agregar nuevas propiedades
 - Listar propiedades del usuario
+- Explorar propiedades disponibles
 - Formulario completo con validación
 - Cards de propiedades con información básica
+- Página de detalle con formulario de reserva
+
+### Reservas y Pagos
+- Sistema completo de reservas
+- Integración con MercadoPago
+- Verificación de disponibilidad
+- Gestión de estados de pago
+- Páginas de resultado de pago
+- Dashboard de reservas del usuario
 
 ### UI/UX
 - Diseño minimalista
@@ -112,10 +133,11 @@ src/
 ## Próximos Pasos
 
 - [ ] Subida de imágenes para propiedades
-- [ ] Sistema de reservas
+- [x] Sistema de reservas
+- [x] Integración con MercadoPago
 - [ ] Búsqueda y filtros
 - [ ] Perfil de usuario
-- [ ] Notificaciones
+- [ ] Notificaciones por email
 - [ ] Dashboard de analytics
 
 ## Tecnologías

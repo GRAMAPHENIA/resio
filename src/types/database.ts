@@ -18,6 +18,7 @@ export interface Booking {
   property_id: string
   user_name: string
   user_email: string
+  user_phone?: string
   start_date: string
   end_date: string
   status: 'pending' | 'paid' | 'cancelled'

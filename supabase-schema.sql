@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
   user_name VARCHAR(255) NOT NULL,
   user_email VARCHAR(255) NOT NULL,
+  user_phone VARCHAR(50),
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
   status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'cancelled')),

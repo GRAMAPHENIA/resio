@@ -6,7 +6,7 @@ import { User } from '@supabase/supabase-js'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
-import { Calendar, Heart, LogOut, LogIn, UserPlus, ChevronDown } from 'lucide-react'
+import { Calendar, Heart, LogOut, LogIn, UserPlus, ChevronDown, Search, Home } from 'lucide-react'
 
 interface NavbarProps {
   user: User | null
@@ -38,8 +38,24 @@ export default function Navbar({ user }: NavbarProps) {
           </div>
           
           <div className="flex items-center space-x-4">
+            <Link
+              href="/favoritos"
+              className="flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
+            >
+              <Heart className="w-4 h-4" />
+              Favoritos
+            </Link>
+            
             {user ? (
               <>
+                <Link
+                  href="/propiedades"
+                  className="flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
+                >
+                  <Home className="w-4 h-4" />
+                  Administrar
+                </Link>
+                
                 <div className="relative">
                   <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -67,7 +83,7 @@ export default function Navbar({ user }: NavbarProps) {
                           {user.user_metadata?.full_name || user.email}
                         </div>
                         <Link
-                          href="/misreservas"
+                          href="/tablero/reservas"
                           className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
@@ -97,24 +113,7 @@ export default function Navbar({ user }: NavbarProps) {
                   )}
                 </div>
               </>
-            ) : (
-              <>
-                <Link
-                  href="/ingresar"
-                  className="inline-flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
-                >
-                  <LogIn className="w-4 h-4" />
-                  Iniciar sesión
-                </Link>
-                <Link
-                  href="/registro"
-                  className="inline-flex items-center gap-2 bg-foreground text-background px-4 py-2 text-sm font-medium hover:bg-neutral-200 transition-colors"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  Registrarse
-                </Link>
-              </>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

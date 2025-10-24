@@ -64,10 +64,10 @@ export default function LoginForm() {
             <Logo size="lg" />
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
-            <LogIn className="w-6 h-6 text-foreground" />
-            <h2 className="text-2xl font-bold text-foreground">Iniciar sesión</h2>
+            <Lock className="w-6 h-6 text-foreground" />
+            <h2 className="text-2xl font-bold text-foreground">Administración</h2>
           </div>
-          <p className="text-neutral-400">Accede a tu cuenta de RE/SIO</p>
+          <p className="text-neutral-400">Acceso para administradores de RESIO Alojamientos</p>
         </div>
 
         {error && (
@@ -134,17 +134,11 @@ export default function LoginForm() {
           {isGoogleLoading ? 'Cargando...' : 'Iniciar sesión con Google'}
         </button>
 
-        <div className="text-center space-y-2">
-          <p className="text-neutral-400 text-sm">
-            ¿No tienes cuenta?{' '}
-            <Link href="/registro" className="text-foreground hover:underline">
-              Regístrate
-            </Link>
-          </p>
+        <div className="text-center">
           <p className="text-neutral-400 text-sm">
             <Link href="/" className="inline-flex items-center gap-1 text-neutral-500 hover:text-foreground">
               <ArrowLeft className="w-3 h-3" />
-              Volver al inicio
+              Volver al sitio
             </Link>
           </p>
         </div>
