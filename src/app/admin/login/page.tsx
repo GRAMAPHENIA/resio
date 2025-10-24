@@ -51,6 +51,7 @@ export default function AdminLoginPage() {
             <h2 className="text-2xl font-bold text-foreground">Administración</h2>
           </div>
           <p className="text-neutral-400">Acceso para administradores</p>
+          <p className="text-neutral-500 text-sm mt-2">Usuario: admin | Contraseña: admin</p>
         </div>
 
         {error && (
