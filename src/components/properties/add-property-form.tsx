@@ -5,7 +5,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, ArrowLeft, Save, Upload, X } from 'lucide-react'
 import Image from 'next/image'
-import { generateSlug } from '@/utils/slug'
 
 export default function AddPropertyForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -77,7 +76,6 @@ export default function AddPropertyForm() {
            .from('properties')
            .insert({
              name: formData.title,
-             slug: generateSlug(formData.title),
              description: formData.description,
              price_per_night: parseFloat(formData.price),
              location: formData.location,
@@ -100,7 +98,6 @@ export default function AddPropertyForm() {
           .from('properties')
           .insert({
             name: formData.title,
-            slug: generateSlug(formData.title),
             description: formData.description,
             price_per_night: parseFloat(formData.price),
             location: formData.location,

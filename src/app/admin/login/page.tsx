@@ -4,39 +4,33 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
-import { AuthService } from '@/services/auth.service'
-import { LogIn, Lock, ArrowLeft } from 'lucide-react'
+import { Lock, LogIn } from 'lucide-react'
 
-export default function LoginForm() {
+export default function AdminLoginPage() {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: ''
   })
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const authService = new AuthService()
-
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
 
-    try {
-      await authService.signInWithEmail(formData.email, formData.password)
-      router.push('/')
-      router.refresh()
-    } catch (error: unknown) {
-      const err = error as Error
-      setError(err.message || 'Error al iniciar sesión')
-    } finally {
-      setIsLoading(false)
+    // Credenciales hardcodeadas para admin
+    if (formData.username === 'admin' && formData.password === 'admin') {
+      // Guardar sesión de admin en localStorage
+      localStorage.setItem('adminSession', 'true')
+      router.push('/admin/dashboard')
+    } else {
+      setError('Usuario o contraseña incorrectos')
     }
+    
+    setIsLoading(false)
   }
-
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -56,28 +50,28 @@ export default function LoginForm() {
             <Lock className="w-6 h-6 text-foreground" />
             <h2 className="text-2xl font-bold text-foreground">Administración</h2>
           </div>
-          <p className="text-neutral-400">Acceso para administradores de RESIO Alojamientos</p>
+          <p className="text-neutral-400">Acceso para administradores</p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-900 border border-red-700 text-red-300 text-sm">
+          <div className="mb-4 p-3 bg-red-900/20 border border-red-800 text-red-400 text-sm">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleEmailLogin} className="space-y-4 mb-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-foreground text-sm font-medium mb-2">
-              Correo electrónico
+              Usuario
             </label>
             <input
-              type="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              name="username"
+              value={formData.username}
               onChange={handleChange}
               required
               className="w-full bg-neutral-900 border border-neutral-800 text-foreground px-3 py-2 focus:outline-none focus:border-foreground"
-              placeholder="tu@email.com"
+              placeholder="admin"
             />
           </div>
 
@@ -92,7 +86,7 @@ export default function LoginForm() {
               onChange={handleChange}
               required
               className="w-full bg-neutral-900 border border-neutral-800 text-foreground px-3 py-2 focus:outline-none focus:border-foreground"
-              placeholder="Tu contraseña"
+              placeholder="admin"
             />
           </div>
 
@@ -106,15 +100,10 @@ export default function LoginForm() {
           </button>
         </form>
 
-
-
-
-
-        <div className="text-center">
+        <div className="text-center mt-6">
           <p className="text-neutral-400 text-sm">
-            <Link href="/" className="inline-flex items-center gap-1 text-neutral-500 hover:text-foreground">
-              <ArrowLeft className="w-3 h-3" />
-              Volver al sitio
+            <Link href="/" className="text-neutral-500 hover:text-foreground">
+              ← Volver al sitio
             </Link>
           </p>
         </div>

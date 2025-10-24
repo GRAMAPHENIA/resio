@@ -1,14 +1,27 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+'use client'
 
-export default async function AdminPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
-  if (!user) {
-    redirect('/ingresar')
-  }
+export default function AdminPage() {
+  const router = useRouter()
 
-  // Redirigir al panel de propiedades
-  redirect('/propiedades')
+  useEffect(() => {
+    // Verificar si ya está logueado como admin
+    const adminSession = localStorage.getItem('adminSession')
+    if (adminSession === 'true') {
+      router.push('/admin/dashboard')
+    } else {
+      router.push('/admin/login')
+    }
+  }, [router])
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
+        <p className="mt-2 text-neutral-400">Redirigiendo...</p>
+      </div>
+    </div>
+  )
 }

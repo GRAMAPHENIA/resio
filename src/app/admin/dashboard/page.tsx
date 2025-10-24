@@ -1,585 +1,159 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Property, Booking } from '@/types/database'
-import { Home, Users, Calendar, TrendingUp, Database, LogOut, Plus, Eye, EyeOff, Edit, Trash2, X } from 'lucide-react'
-import Notification from '@/components/ui/notification'
+import { useRouter } from 'next/navigation'
+import AdminGuard from '@/components/admin/AdminGuard'
+import { Property } from '@/types/database'
+import { Home, Plus, LogOut, Eye, EyeOff } from 'lucide-react'
 
 export default function AdminDashboard() {
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({
-    totalProperties: 0,
-    totalUsers: 0,
-    totalBookings: 0,
-    totalRevenue: 0
-  })
   const [properties, setProperties] = useState<Property[]>([])
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [activeTab, setActiveTab] = useState('overview')
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
-  const [notification, setNotification] = useState<{
-    message: string
-    type: 'success' | 'error' | 'info'
-  } | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Verificar autenticación de admin
-    const isAdminLoggedIn = localStorage.getItem('admin_logged_in')
-    if (!isAdminLoggedIn) {
-      router.push('/admin')
-      return
-    }
+    fetchProperties()
+  }, [])
 
-    fetchData()
-  }, [router])
-
-  const fetchData = async () => {
+  const fetchProperties = async () => {
     try {
       const supabase = createClient()
-      console.log('Fetching data from Supabase...')
-
-      // Obtener propiedades con cache busting usando timestamp
-      const cacheBuster = Date.now()
-      const { data: propertiesData, error: propertiesError } = await supabase
+      const { data, error } = await supabase
         .from('properties')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(100) // Asegurar que no haya límites
 
-      console.log('Cache buster timestamp:', cacheBuster)
-
-      console.log('Properties data:', propertiesData)
-      console.log('Properties error:', propertiesError)
-
-      // Verificar específicamente si la propiedad eliminada sigue existiendo
-      if (propertiesData) {
-        const deletedPropertyExists = propertiesData.some(p => p.id === '583d4617-2ac4-4eed-b2c0-96c8384cc7a4')
-        console.log('Deleted property still exists in data:', deletedPropertyExists)
-        console.log('Total properties found:', propertiesData.length)
+      if (!error && data) {
+        setProperties(data)
       }
-
-      if (propertiesError) {
-        console.error('Error fetching properties:', propertiesError)
-      }
-
-      // Obtener bookings de forma simple
-      const { data: bookingsData, error: bookingsError } = await supabase
-        .from('bookings')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      console.log('Bookings data:', bookingsData)
-      console.log('Bookings error:', bookingsError)
-
-      // Estadísticas simples
-      const totalProperties = propertiesData?.length || 0
-      const totalBookings = bookingsData?.filter(booking => booking.status === 'paid').length || 0
-      const totalRevenue = bookingsData?.reduce((sum, booking) =>
-        booking.status === 'paid' ? sum + booking.amount : sum, 0) || 0
-
-      setStats({
-        totalProperties,
-        totalUsers: 0, // Temporalmente 0 hasta arreglar profiles
-        totalBookings,
-        totalRevenue
-      })
-
-      setProperties(propertiesData || [])
-      setBookings(bookingsData || [])
     } catch (error) {
-      console.error('Error fetching data:', error)
+      console.error('Error fetching properties:', error)
     } finally {
       setLoading(false)
     }
   }
 
+  const toggleAvailability = async (propertyId: string, currentStatus: boolean) => {
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('properties')
+        .update({ available: !currentStatus })
+        .eq('id', propertyId)
+
+      if (!error) {
+        setProperties(prev => prev.map(p =>
+          p.id === propertyId ? { ...p, available: !currentStatus } : p
+        ))
+      }
+    } catch (error) {
+      console.error('Error updating property:', error)
+    }
+  }
+
   const handleLogout = () => {
-    localStorage.removeItem('admin_logged_in')
-    router.push('/admin')
+    localStorage.removeItem('adminSession')
+    router.push('/admin/login')
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="text-center py-12">
-          <div className="text-neutral-400">Cargando panel de administración...</div>
+      <AdminGuard>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
+            <p className="mt-2 text-neutral-400">Cargando...</p>
+          </div>
         </div>
-      </div>
+      </AdminGuard>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background" style={{ paddingTop: '0' }}>
-      {/* Header */}
-      <div className="bg-neutral-900 border-b border-neutral-800 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Database className="w-8 h-8 text-foreground" />
-            <h1 className="text-xl font-bold text-neutral-500">RESIO</h1>
-          </div>
-          <div className="flex items-center gap-4">
+    <AdminGuard>
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <div className="bg-neutral-900 border-b border-neutral-800 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold text-foreground">Panel de Administración</h1>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 text-sm bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm bg-neutral-800 text-neutral-300 hover:bg-neutral-700 transition-colors"
             >
               <LogOut className="w-4 h-4" />
               Cerrar sesión
             </button>
           </div>
         </div>
-      </div>
 
-      <div className="flex">
-        {/* Sidebar */}
-        <div className="w-64 bg-neutral-900 border-r border-neutral-800 min-h-screen">
-          <nav className="p-4 space-y-2">
+        {/* Content */}
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-foreground">Propiedades</h2>
             <button
-              onClick={() => setActiveTab('overview')}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${
-                activeTab === 'overview' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
-              }`}
+              onClick={() => router.push('/propiedades/agregar')}
+              className="inline-flex items-center gap-2 bg-foreground text-background px-4 py-2 font-medium hover:bg-neutral-200 transition-colors"
             >
-              <TrendingUp className="w-5 h-5" />
-              Resumen
+              <Plus className="w-4 h-4" />
+              Agregar Propiedad
             </button>
-            <button
-              onClick={() => setActiveTab('properties')}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${
-                activeTab === 'properties' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
-              }`}
-            >
-              <Home className="w-5 h-5" />
-              Propiedades
-            </button>
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${
-                activeTab === 'users' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
-              }`}
-            >
-              <Users className="w-5 h-5" />
-              Usuarios
-            </button>
-            <button
-              onClick={() => setActiveTab('bookings')}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${
-                activeTab === 'bookings' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
-              }`}
-            >
-              <Calendar className="w-5 h-5" />
-              Reservas
-            </button>
-          </nav>
-        </div>
+          </div>
 
-        {/* Main Content */}
-        <div className="flex-1 p-6">
-          {activeTab === 'overview' && (
-            <div>
-              <h2 className="text-3xl font-bold text-foreground mb-8">Sistema</h2>
-
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div className="bg-neutral-900 p-6 border border-neutral-800">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Home className="w-5 h-5 text-foreground" />
-                    <h3 className="text-lg font-semibold text-foreground">Propiedades</h3>
+          {properties.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {properties.map((property) => (
+                <div key={property.id} className="bg-neutral-900 border border-neutral-800 p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    {property.name}
+                  </h3>
+                  <p className="text-neutral-400 text-sm mb-4">
+                    {property.location}
+                  </p>
+                  <p className="text-foreground font-bold mb-4">
+                    ${property.price_per_night.toLocaleString()}/noche
+                  </p>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className={`px-2 py-1 text-xs font-medium ${
+                      property.available 
+                        ? 'bg-green-900 text-green-300' 
+                        : 'bg-neutral-700 text-neutral-400'
+                    }`}>
+                      {property.available ? 'Publicada' : 'Borrador'}
+                    </span>
+                    
+                    <button
+                      onClick={() => toggleAvailability(property.id, property.available)}
+                      className="flex items-center gap-1 px-3 py-1 text-xs bg-neutral-800 text-neutral-300 hover:bg-neutral-700 transition-colors"
+                    >
+                      {property.available ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                      {property.available ? 'Ocultar' : 'Publicar'}
+                    </button>
                   </div>
-                  <p className="text-3xl font-bold text-foreground">{stats.totalProperties}</p>
                 </div>
-
-                <div className="bg-neutral-900 p-6 border border-neutral-800">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Users className="w-5 h-5 text-foreground" />
-                    <h3 className="text-lg font-semibold text-foreground">Usuarios</h3>
-                  </div>
-                  <p className="text-3xl font-bold text-foreground">{stats.totalUsers}</p>
-                </div>
-
-                <div className="bg-neutral-900 p-6 border border-neutral-800">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Calendar className="w-5 h-5 text-foreground" />
-                    <h3 className="text-lg font-semibold text-foreground">Reservas</h3>
-                  </div>
-                  <p className="text-3xl font-bold text-foreground">{stats.totalBookings}</p>
-                </div>
-
-                <div className="bg-neutral-900 p-6 border border-neutral-800">
-                  <div className="flex items-center gap-3 mb-2">
-                    <TrendingUp className="w-5 h-5 text-foreground" />
-                    <h3 className="text-lg font-semibold text-foreground">Ingresos</h3>
-                  </div>
-                  <p className="text-3xl font-bold text-foreground">${stats.totalRevenue}</p>
-                </div>
-              </div>
+              ))}
             </div>
-          )}
-
-          {activeTab === 'properties' && (
-            <div>
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold text-foreground">Gestión de Propiedades</h2>
-                <button
-                  onClick={() => router.push('/propiedades/agregar')}
-                  className="inline-flex items-center gap-2 bg-foreground text-background px-4 py-2 text-sm font-medium hover:bg-neutral-200 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  Agregar Propiedad
-                </button>
-              </div>
-              <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-neutral-800">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Nombre</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Ubicación</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Precio</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Estado</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Reservas</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-neutral-800">
-                      {properties.map((property) => {
-                        const propertyBookings = bookings.filter(b => b.property_id === property.id && b.status === 'paid');
-                        return (
-                          <tr key={property.id} className="hover:bg-neutral-800/50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground font-medium">{property.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{property.location}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">${property.price_per_night}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold ${
-                                  property.available ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                                }`}>
-                                  {property.available ? 'Publicada' : 'Borrador'}
-                                </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                              <div className="flex items-center gap-2">
-                                <span>{propertyBookings.length}</span>
-                                {propertyBookings.length > 0 && (
-                                  <button
-                                    onClick={() => setSelectedProperty(property)}
-                                    className="px-2 py-1 text-xs bg-foreground text-background hover:bg-neutral-200"
-                                  >
-                                    Ver calendario
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => {
-                                    // Toggle available status
-                                    const newAvailable = !property.available
-                                    const supabase = createClient()
-                                    supabase
-                                      .from('properties')
-                                      .update({ available: newAvailable })
-                                      .eq('id', property.id)
-                                      .then(({ error }) => {
-                                        if (error) {
-                                          setNotification({
-                                            message: 'Error al actualizar el estado',
-                                            type: 'error'
-                                          })
-                                        } else {
-                                          setProperties(prev => prev.map(p =>
-                                            p.id === property.id ? { ...p, available: newAvailable } : p
-                                          ))
-                                          setNotification({
-                                            message: `Propiedad ${newAvailable ? 'publicada' : 'despublicada'} exitosamente`,
-                                            type: 'success'
-                                          })
-                                        }
-                                      })
-                                  }}
-                                  className={`px-2 py-1 text-xs ${
-                                    property.available
-                                      ? 'bg-yellow-500/5 text-yellow-400 hover:bg-yellow-500/10'
-                                      : 'bg-green-500/5 text-green-400 hover:bg-green-500/10'
-                                  }`}
-                                >
-                                  {property.available ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    // Edit functionality - for now just show notification
-                                    setNotification({
-                                      message: 'Funcionalidad de edición próximamente',
-                                      type: 'info'
-                                    })
-                                  }}
-                                  className="px-2 py-1 text-xs bg-blue-500/5 text-blue-400 hover:bg-blue-500/10"
-                                >
-                                  <Edit className="w-3 h-3" />
-                                </button>
-                                <button
-                                  onClick={async () => {
-                                    try {
-                                      const supabase = createClient()
-                                      console.log('Attempting to delete property with ID:', property.id)
-
-                                      // Primero verificar si la propiedad existe
-                                      const { data: existingProperty, error: fetchError } = await supabase
-                                        .from('properties')
-                                        .select('id, name')
-                                        .eq('id', property.id)
-                                        .single()
-
-                                      if (fetchError || !existingProperty) {
-                                        console.warn('Property does not exist:', fetchError)
-                                        setNotification({
-                                          message: 'La propiedad no existe o ya fue eliminada',
-                                          type: 'error'
-                                        })
-                                        // Actualizar estado local de todas formas
-                                        setProperties(prev => prev.filter(p => p.id !== property.id))
-                                        return
-                                      }
-
-                                      console.log('Property exists, proceeding with deletion:', existingProperty)
-
-                                      // Verificar permisos antes de eliminar
-                                      console.log('Current user permissions check...')
-                                      const { data: { user } } = await supabase.auth.getUser()
-                                      console.log('Current user:', user?.id)
-
-                                      const { error: deleteError, data: deleteData } = await supabase
-                                        .from('properties')
-                                        .delete()
-                                        .eq('id', property.id)
-                                        .select()
-
-                                      console.log('Delete error:', deleteError)
-
-                                      console.log('Delete operation result:', { error: deleteError, data: deleteData })
-
-                                      if (deleteError) {
-                                        console.error('Error deleting property:', deleteError)
-                                        setNotification({
-                                          message: `Error al eliminar la propiedad: ${deleteError.message}`,
-                                          type: 'error'
-                                        })
-                                      } else if (deleteData && deleteData.length > 0) {
-                                        console.log('Property deleted successfully from database:', deleteData)
-
-                                        // Actualizar el estado local inmediatamente
-                                        setProperties(prev => {
-                                          const filtered = prev.filter(p => p.id !== property.id)
-                                          console.log('Local state updated. Properties before:', prev.length, 'after:', filtered.length)
-                                          return filtered
-                                        })
-
-                                        setNotification({
-                                          message: 'Propiedad eliminada exitosamente',
-                                          type: 'success'
-                                        })
-
-                                        // Intentar recarga inmediata primero
-                                        console.log('Attempting immediate re-fetch...')
-                                        await fetchData()
-
-                                        // Si aún existe, intentar con delay
-                                        setTimeout(async () => {
-                                          console.log('Re-fetching data after delay...')
-                                          await fetchData()
-                                        }, 2000)
-                                      } else {
-                                        console.warn('Delete operation completed but no data returned')
-                                        setNotification({
-                                          message: 'La eliminación se completó pero no se confirmó',
-                                          type: 'error'
-                                        })
-                                      }
-                                    } catch (error) {
-                                      console.error('Unexpected error:', error)
-                                      setNotification({
-                                        message: 'Error inesperado al eliminar la propiedad',
-                                        type: 'error'
-                                      })
-                                    }
-                                  }}
-                                  className="px-2 py-1 text-xs bg-red-500/5 text-red-400 hover:bg-red-500/10"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                      {properties.length === 0 && (
-                        <tr>
-                          <td colSpan={7} className="px-6 py-4 text-center text-neutral-400">
-                            No hay propiedades registradas
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'users' && (
-            <div>
-              <h2 className="text-3xl font-bold text-foreground mb-8">Gestión de Usuarios</h2>
-              <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-neutral-800">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Nombre</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Tipo</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Fecha Registro</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-neutral-800">
-                      {/* Los usuarios se mostrarían aquí - necesitaríamos obtenerlos de profiles */}
-                      <tr>
-                        <td colSpan={4} className="px-6 py-4 text-center text-neutral-400">
-                          Funcionalidad de usuarios próximamente
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'bookings' && (
-            <div>
-              <h2 className="text-3xl font-bold text-foreground mb-8">Gestión de Reservas</h2>
-              <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-neutral-800">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Propiedad</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Cliente</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Fechas</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Estado</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Monto</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-neutral-800">
-                      {bookings.map((booking: Booking) => (
-                        <tr key={booking.id} className="hover:bg-neutral-800/50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                            {properties.find(p => p.id === booking.property_id)?.name || 'N/A'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                            <div>
-                              <div className="font-medium">{booking.user_name}</div>
-                              <div className="text-neutral-400">{booking.user_email}</div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                            <div>
-                              <div>Desde: {new Date(booking.start_date).toLocaleDateString()}</div>
-                              <div>Hasta: {new Date(booking.end_date).toLocaleDateString()}</div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              booking.status === 'paid'
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                : booking.status === 'pending'
-                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                            }`}>
-                              {booking.status === 'paid' ? 'Pagado' :
-                               booking.status === 'pending' ? 'Pendiente' : 'Cancelado'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                            ${booking.amount}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Property Calendar Modal */}
-      {selectedProperty && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-neutral-900 border border-neutral-800 p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-foreground">
-                Calendario de Reservas - {selectedProperty.name}
-              </h2>
+          ) : (
+            <div className="text-center py-12">
+              <Home className="w-16 h-16 text-neutral-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                No hay propiedades
+              </h3>
+              <p className="text-neutral-400 mb-6">
+                Comienza agregando tu primera propiedad
+              </p>
               <button
-                onClick={() => setSelectedProperty(null)}
-                className="p-1 hover:bg-neutral-800"
+                onClick={() => router.push('/propiedades/agregar')}
+                className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 font-medium hover:bg-neutral-200 transition-colors"
               >
-                <X className="w-5 h-5" />
+                <Plus className="w-4 h-4" />
+                Agregar Primera Propiedad
               </button>
             </div>
-
-            <div className="space-y-4">
-              <div className="text-sm text-neutral-400 mb-4">
-                <p>Ubicación: {selectedProperty.location}</p>
-                <p>Precio por noche: ${selectedProperty.price_per_night}</p>
-              </div>
-
-              <div className="bg-neutral-800 p-4">
-                <h3 className="text-lg font-medium text-foreground mb-4">Reservas Confirmadas</h3>
-                <div className="space-y-3">
-                  {bookings
-                    .filter(b => b.property_id === selectedProperty.id && b.status === 'paid')
-                    .map((booking) => (
-                      <div key={booking.id} className="bg-neutral-700 p-3 border border-neutral-600">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="font-medium text-foreground">{booking.user_name}</div>
-                            <div className="text-sm text-neutral-400">{booking.user_email}</div>
-                            <div className="text-sm text-neutral-300 mt-1">
-                              Desde: {new Date(booking.start_date).toLocaleDateString('es-ES')} -
-                              Hasta: {new Date(booking.end_date).toLocaleDateString('es-ES')}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-medium text-green-400">${booking.amount}</div>
-                            <div className="text-xs text-green-300">Pagado</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  {bookings.filter(b => b.property_id === selectedProperty.id && b.status === 'paid').length === 0 && (
-                    <div className="text-center py-8 text-neutral-400">
-                      No hay reservas confirmadas para esta propiedad
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
-      )}
-
-      {/* Notification */}
-      {notification && (
-        <Notification
-          message={notification.message}
-          type={notification.type}
-          onClose={() => setNotification(null)}
-        />
-      )}
-    </div>
+      </div>
+    </AdminGuard>
   )
 }
