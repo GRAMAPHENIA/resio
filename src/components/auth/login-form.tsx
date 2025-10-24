@@ -42,7 +42,7 @@ export default function LoginForm() {
     
     try {
       await authService.signInWithGoogle('/')
-    } catch (error: unknown) {
+    } catch {
       setError('Error al iniciar sesión con Google')
     } finally {
       setIsGoogleLoading(false)

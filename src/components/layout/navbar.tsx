@@ -6,7 +6,8 @@ import { User } from '@supabase/supabase-js'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
-import { Calendar, Heart, LogOut, LogIn, UserPlus, ChevronDown, Search, Home } from 'lucide-react'
+import { Calendar, Heart, LogOut, ChevronDown, Home } from 'lucide-react'
+import Image from 'next/image'
 
 interface NavbarProps {
   user: User | null
@@ -62,11 +63,15 @@ export default function Navbar({ user }: NavbarProps) {
                     className="flex items-center space-x-2 text-neutral-400 hover:text-foreground transition-colors"
                   >
                     {user.user_metadata?.avatar_url ? (
-                      <img
-                        src={user.user_metadata.avatar_url}
-                        alt="Avatar"
-                        className="w-8 h-8 bg-neutral-700 rounded-full"
-                      />
+                      <div className="w-8 h-8 bg-neutral-700 rounded-full relative overflow-hidden">
+                        <Image
+                          src={user.user_metadata.avatar_url}
+                          alt="Avatar"
+                          fill
+                          className="object-cover"
+                          sizes="32px"
+                        />
+                      </div>
                     ) : (
                       <div className="w-8 h-8 bg-neutral-700 rounded-full flex items-center justify-center">
                         <span className="text-foreground text-sm font-medium">

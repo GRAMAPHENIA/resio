@@ -33,6 +33,7 @@ Para recibir notificaciones automáticas de pagos:
 ## URLs de Retorno
 
 Las URLs de retorno ya están configuradas en el código:
+
 - Éxito: `/reservas/exito`
 - Fallo: `/reservas/fallo`
 - Pendiente: `/reservas/pendiente`
@@ -42,10 +43,12 @@ Las URLs de retorno ya están configuradas en el código:
 Para probar los pagos, usa las [tarjetas de prueba de MercadoPago](https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/additional-content/test-cards):
 
 ### Tarjetas Aprobadas
+
 - **Visa**: 4509 9535 6623 3704
 - **Mastercard**: 5031 7557 3453 0604
 
 ### Datos de Prueba
+
 - **CVV**: Cualquier número de 3 dígitos
 - **Fecha**: Cualquier fecha futura
 - **Nombre**: Cualquier nombre

@@ -33,15 +33,22 @@ export class MercadoPagoService {
       const preferenceData = {
         items: [
           {
+            id: `item_${Date.now()}`,
             title: data.title,
             quantity: data.quantity,
             unit_price: data.unit_price,
             currency_id: data.currency_id,
-            description: data.description
+            description: data.description || ''
           }
         ],
-        external_reference: data.external_reference,
-        payer: data.payer,
+        external_reference: data.external_reference || '',
+        payer: data.payer ? {
+          name: data.payer.name || '',
+          email: data.payer.email || ''
+        } : {
+          name: '',
+          email: ''
+        },
         back_urls: {
           success: `${process.env.NEXT_PUBLIC_SITE_URL}/reservas/exito`,
           failure: `${process.env.NEXT_PUBLIC_SITE_URL}/reservas/fallo`,

@@ -3,10 +3,11 @@
 import { Property } from '@/types/database'
 import { useAuth } from '@/hooks/useAuth'
 import { Heart, Calendar, Settings } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import PropertyToggle from './property-toggle'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface PropertyCardProps {
   property: Property
@@ -20,13 +21,7 @@ export default function PropertyCard({ property, onBook, isOwner = false }: Prop
   const [isLoading, setIsLoading] = useState(false)
   const supabase = createClient()
 
-  useEffect(() => {
-    if (user) {
-      checkIfFavorite()
-    }
-  }, [user, property.id])
-
-  const checkIfFavorite = async () => {
+  const checkIfFavorite = useCallback(async () => {
     if (!user) return
 
     const { data } = await supabase
@@ -37,7 +32,13 @@ export default function PropertyCard({ property, onBook, isOwner = false }: Prop
       .single()
 
     setIsFavorite(!!data)
-  }
+  }, [user, property.id, supabase])
+
+  useEffect(() => {
+    if (user) {
+      checkIfFavorite()
+    }
+  }, [user, checkIfFavorite])
 
   const toggleFavorite = async () => {
     if (!user) {
@@ -77,10 +78,12 @@ export default function PropertyCard({ property, onBook, isOwner = false }: Prop
     <div className="bg-neutral-900 border border-neutral-800 overflow-hidden flex flex-col h-full">
       <div className="relative h-48 bg-neutral-800 flex items-center justify-center">
         {property.images && property.images.length > 0 ? (
-          <img
+          <Image
             src={property.images[0]}
             alt={property.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
           <span className="text-neutral-500">Sin imagen</span>

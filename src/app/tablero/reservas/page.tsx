@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { BookingService, BookingWithProperty } from '@/services/booking.service'
 import { Calendar, MapPin, CreditCard } from 'lucide-react'
+import Link from 'next/link'
 
 export default function ReservasPage() {
   const { user } = useAuth()
@@ -11,23 +12,23 @@ export default function ReservasPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    if (user?.email) {
-      loadBookings()
-    }
-  }, [user])
-
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
+    if (!user?.email) return
+    
     try {
       setLoading(true)
-      const userBookings = await BookingService.getBookingsByUser(user!.email!)
+      const userBookings = await BookingService.getBookingsByUser(user.email)
       setBookings(userBookings)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar las reservas')
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.email])
+
+  useEffect(() => {
+    loadBookings()
+  }, [loadBookings])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -87,12 +88,12 @@ export default function ReservasPage() {
             <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No tienes reservas</h3>
             <p className="text-gray-600 mb-4">Cuando hagas una reserva, aparecerá aquí.</p>
-            <a
-              href="/propiedades"
-              className="inline-block bg-gray-900 text-white px-6 py-2 hover:bg-gray-800 transition-colors"
+            <Link
+              href="/"
+              className="inline-block bg-foreground text-background px-6 py-2 hover:bg-neutral-200 transition-colors"
             >
-              Explorar propiedades
-            </a>
+              Ver alojamientos
+            </Link>
           </div>
         ) : (
           <div className="space-y-6">

@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import PropertyCard from '@/components/properties/property-card'
 import { Search, Home } from 'lucide-react'
 
 export default async function ExplorarPropiedadesPage() {

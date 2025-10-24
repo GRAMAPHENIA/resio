@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
-import { UserPlus, Mail, Lock, User, ArrowLeft } from 'lucide-react'
+import { UserPlus, ArrowLeft } from 'lucide-react'
 
 export default function RegisterForm() {
   const router = useRouter()
@@ -60,7 +60,7 @@ export default function RegisterForm() {
     
     try {
       await authService.signInWithGoogle('/bienvenida')
-    } catch (error: unknown) {
+    } catch {
       setError('Error al registrarse con Google')
     } finally {
       setIsGoogleLoading(false)

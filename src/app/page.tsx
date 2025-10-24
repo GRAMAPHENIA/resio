@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Logo from "@/components/ui/logo"
 import Link from "next/link"
+import Image from "next/image"
 import { Home, MapPin, Bed, Bath, Square } from "lucide-react"
 import FavoriteButton from '@/components/ui/favorite-button'
 
@@ -42,10 +43,12 @@ export default async function HomePage() {
                   {/* Imagen */}
                   <div className="h-64 bg-neutral-700 flex items-center justify-center relative">
                     {property.images && property.images.length > 0 ? (
-                      <img
+                      <Image
                         src={property.images[0]}
                         alt={property.name}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     ) : (
                       <Home className="w-16 h-16 text-neutral-500" />

@@ -4,10 +4,10 @@ import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, ArrowLeft, Save, Upload, X } from 'lucide-react'
+import Image from 'next/image'
 
 export default function AddPropertyForm() {
   const [isLoading, setIsLoading] = useState(false)
-  const [images, setImages] = useState<File[]>([])
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [formData, setFormData] = useState({
     title: '',
@@ -25,7 +25,6 @@ export default function AddPropertyForm() {
 
   const handleImageUpload = async (files: FileList) => {
     const newImages = Array.from(files)
-    setImages(prev => [...prev, ...newImages])
 
     // Subir imágenes a Supabase Storage
     const uploadedUrls: string[] = []
@@ -60,7 +59,6 @@ export default function AddPropertyForm() {
   }
 
   const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index))
     setImageUrls(prev => prev.filter((_, i) => i !== index))
   }
 
@@ -271,11 +269,15 @@ export default function AddPropertyForm() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {imageUrls.map((url, index) => (
                     <div key={index} className="relative">
-                      <img
-                        src={url}
-                        alt={`Foto ${index + 1}`}
-                        className="w-full h-24 object-cover border border-neutral-600"
-                      />
+                      <div className="w-full h-24 border border-neutral-600 relative">
+                        <Image
+                          src={url}
+                          alt={`Foto ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                        />
+                      </div>
                       <button
                         type="button"
                         onClick={() => removeImage(index)}

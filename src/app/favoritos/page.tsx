@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Heart, ArrowLeft, Home, MapPin } from 'lucide-react'
 import { Property } from '@/types/database'
 
@@ -86,10 +87,12 @@ export default function FavoritosPage() {
               <div key={property.id} className="bg-neutral-900 border border-neutral-800 overflow-hidden hover:bg-neutral-800 transition-colors flex flex-col h-full">
                 <div className="h-48 bg-neutral-700 flex items-center justify-center relative">
                   {property.images && property.images.length > 0 ? (
-                    <img
+                    <Image
                       src={property.images[0]}
                       alt={property.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   ) : (
                     <Home className="w-12 h-12 text-neutral-500" />
