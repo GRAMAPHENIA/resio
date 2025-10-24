@@ -15,6 +15,9 @@ export default function FavoritosPage() {
   useEffect(() => {
     const loadFavorites = async () => {
       try {
+        // Verificar que localStorage esté disponible
+        if (typeof window === 'undefined') return
+        
         // Obtener IDs de favoritos del localStorage
         const favoritesIds = JSON.parse(localStorage.getItem('favorites') || '[]')
         
@@ -44,6 +47,8 @@ export default function FavoritosPage() {
   }, [supabase])
 
   const removeFavorite = (propertyId: string) => {
+    if (typeof window === 'undefined') return
+    
     const currentFavorites = JSON.parse(localStorage.getItem('favorites') || '[]')
     const updatedFavorites = currentFavorites.filter((id: string) => id !== propertyId)
     localStorage.setItem('favorites', JSON.stringify(updatedFavorites))

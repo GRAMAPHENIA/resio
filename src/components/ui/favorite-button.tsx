@@ -13,13 +13,17 @@ export default function FavoriteButton({ propertyId, className = '' }: FavoriteB
 
   useEffect(() => {
     // Verificar si la propiedad está en favoritos
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
-    setIsFavorite(favorites.includes(propertyId))
+    if (typeof window !== 'undefined') {
+      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
+      setIsFavorite(favorites.includes(propertyId))
+    }
   }, [propertyId])
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault() // Evitar navegación si está dentro de un link
     e.stopPropagation()
+
+    if (typeof window === 'undefined') return
 
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
     

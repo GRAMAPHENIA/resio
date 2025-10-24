@@ -31,21 +31,9 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // Rutas públicas que no requieren autenticación
-  const publicRoutes = ['/', '/registro', '/ingresar', '/admin']
-  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname) ||
-                        request.nextUrl.pathname.startsWith('/auth')
-
-  if (!user && !isPublicRoute) {
-    // no user, redirect to home page
-    const url = request.nextUrl.clone()
-    url.pathname = '/'
-    return NextResponse.redirect(url)
-  }
+  // Como ahora el sitio es público, solo mantenemos la sesión de Supabase
+  // sin redirigir usuarios no autenticados
+  await supabase.auth.getUser()
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
   // creating a new response object with NextResponse.next() make sure to:
