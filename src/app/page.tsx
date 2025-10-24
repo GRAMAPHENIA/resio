@@ -4,6 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Home, MapPin, Bed, Bath, Square } from "lucide-react"
 import FavoriteButton from '@/components/ui/favorite-button'
+import { generateSlug } from '@/utils/slug'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -96,7 +97,7 @@ export default async function HomePage() {
                     </div>
 
                     <Link
-                      href={`/alojamiento/${property.id}`}
+                      href={`/alojamiento/${property.slug || generateSlug(property.name)}`}
                       className="block w-full text-center bg-foreground text-background py-3 px-4 hover:bg-neutral-200 transition-colors font-medium mt-auto"
                     >
                       Ver detalles y reservar
