@@ -8,6 +8,14 @@ export async function GET(request: Request) {
   
   // Use environment variable for base URL, fallback to production URL
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://clienteresio.vercel.app';
+  
+  // Debug logging (remove after fixing)
+  console.log('🔍 Auth Callback Debug:');
+  console.log('NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL);
+  console.log('baseUrl:', baseUrl);
+  console.log('request.url:', request.url);
+  console.log('code:', code);
+  console.log('next:', next);
 
   if (code) {
     const supabase = await createClient();
