@@ -47,6 +47,14 @@ export default function Navbar({ user }: NavbarProps) {
               Favoritos
             </Link>
             
+            <Link
+              href="/mis-reservas"
+              className="flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
+            >
+              <Calendar className="w-4 h-4" />
+              Mis Reservas
+            </Link>
+            
             {user ? (
               <>
                 <Link

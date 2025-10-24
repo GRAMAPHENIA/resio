@@ -71,7 +71,7 @@ export default function AdminLoginPage() {
               onChange={handleChange}
               required
               className="w-full bg-neutral-900 border border-neutral-800 text-foreground px-3 py-2 focus:outline-none focus:border-foreground"
-              placeholder="admin"
+              placeholder="Ingresa: admin"
             />
           </div>
 
@@ -86,7 +86,7 @@ export default function AdminLoginPage() {
               onChange={handleChange}
               required
               className="w-full bg-neutral-900 border border-neutral-800 text-foreground px-3 py-2 focus:outline-none focus:border-foreground"
-              placeholder="admin"
+              placeholder="Ingresa: admin"
             />
           </div>
 

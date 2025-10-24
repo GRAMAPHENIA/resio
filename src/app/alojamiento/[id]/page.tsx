@@ -11,24 +11,12 @@ export default async function AlojamientoDetailPage({ params }: AlojamientoDetai
   const { id } = await params
   const supabase = await createClient()
 
-  // Buscar por slug primero, luego por ID como fallback
-  let { data: property, error } = await supabase
+  // Buscar por ID
+  const { data: property, error } = await supabase
     .from('properties')
     .select('*')
-    .eq('slug', id)
+    .eq('id', id)
     .single()
-
-  // Si no se encuentra por slug, intentar por ID (para compatibilidad)
-  if (error && error.code === 'PGRST116') {
-    const { data: propertyById, error: errorById } = await supabase
-      .from('properties')
-      .select('*')
-      .eq('id', id)
-      .single()
-    
-    property = propertyById
-    error = errorById
-  }
 
   if (error || !property) {
     notFound()
