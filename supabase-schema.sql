@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS properties (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE,
   description TEXT NOT NULL,
   location VARCHAR(255) NOT NULL,
   price_per_night DECIMAL(10,2) NOT NULL,

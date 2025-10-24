@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Heart, ArrowLeft, Home, MapPin } from 'lucide-react'
 import { Property } from '@/types/database'
+import { generateSlug } from '@/utils/slug'
 
 export default function FavoritosPage() {
   const [favoriteProperties, setFavoriteProperties] = useState<Property[]>([])
@@ -127,7 +128,7 @@ export default function FavoritosPage() {
                   </div>
 
                   <Link
-                    href={`/alojamiento/${property.id}`}
+                    href={`/alojamiento/${property.slug || generateSlug(property.name)}`}
                     className="block w-full text-center bg-foreground text-background py-2 px-4 hover:bg-neutral-200 transition-colors font-medium mt-auto"
                   >
                     Ver detalles y reservar
