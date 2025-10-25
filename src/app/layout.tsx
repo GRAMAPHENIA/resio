@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "RESIO Alojamientos - Reserva tu estadía",
   description: "Encuentra y reserva el alojamiento perfecto para tus vacaciones. Sistema simple y seguro de reservas online.",
+  icons: {
+    icon: "/resio-logo-32.svg",
+    shortcut: "/resio-logo-32.svg",
+    apple: "/resio-logo-32.svg",
+  },
 };
 
 export default async function RootLayout({
@@ -27,12 +32,20 @@ export default async function RootLayout({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Serializar el usuario para evitar problemas de hidratación
+  const serializedUser = user ? {
+    id: user.id,
+    email: user.email,
+    user_metadata: user.user_metadata,
+    created_at: user.created_at
+  } : null;
+
   return (
     <html lang="es">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClientLayout user={user}>
+        <ClientLayout user={serializedUser}>
           {children}
         </ClientLayout>
       </body>

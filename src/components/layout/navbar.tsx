@@ -2,15 +2,21 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { User } from '@supabase/supabase-js'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
 import { Calendar, Heart, LogOut, ChevronDown, Home } from 'lucide-react'
 import Image from 'next/image'
 
+interface SerializedUser {
+  id: string
+  email?: string
+  user_metadata?: any
+  created_at: string
+}
+
 interface NavbarProps {
-  user: User | null
+  user: SerializedUser | null
 }
 
 export default function Navbar({ user }: NavbarProps) {
@@ -34,7 +40,7 @@ export default function Navbar({ user }: NavbarProps) {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href="/">
-              <Logo />
+              <Logo size="sm" />
             </Link>
           </div>
           

@@ -1,0 +1,6 @@
+<svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 25C0 11.1929 11.1929 0 25 0V0V25H0V25Z" fill="#F3B46C"/>
+<path d="M25 0H50V0C50 13.8071 38.8071 25 25 25V25V0Z" fill="#F3B46C"/>
+<path d="M25 25H37.5C44.4036 25 50 30.5964 50 37.5V50H37.5C30.5964 50 25 44.4036 25 37.5V25Z" fill="#F3B46C"/>
+<path d="M0 25C13.8071 25 25 36.1929 25 50H0V25Z" fill="#F3B46C"/>
+</svg>

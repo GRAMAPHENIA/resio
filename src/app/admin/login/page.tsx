@@ -51,7 +51,6 @@ export default function AdminLoginPage() {
             <h2 className="text-2xl font-bold text-foreground">Administración</h2>
           </div>
           <p className="text-neutral-400">Acceso para administradores</p>
-          <p className="text-neutral-500 text-sm mt-2">Usuario: admin | Contraseña: admin</p>
         </div>
 
         {error && (
@@ -72,7 +71,7 @@ export default function AdminLoginPage() {
               onChange={handleChange}
               required
               className="w-full bg-neutral-900 border border-neutral-800 text-foreground px-3 py-2 focus:outline-none focus:border-foreground"
-              placeholder="Ingresa: admin"
+              placeholder="••••••"
             />
           </div>
 
@@ -87,7 +86,7 @@ export default function AdminLoginPage() {
               onChange={handleChange}
               required
               className="w-full bg-neutral-900 border border-neutral-800 text-foreground px-3 py-2 focus:outline-none focus:border-foreground"
-              placeholder="Ingresa: admin"
+              placeholder="••••••"
             />
           </div>
 

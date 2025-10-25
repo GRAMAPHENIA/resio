@@ -1,11 +1,17 @@
 'use client'
 
-import { User } from '@supabase/supabase-js'
 import { usePathname } from 'next/navigation'
 import Navbar from './navbar'
 
+interface SerializedUser {
+  id: string
+  email?: string
+  user_metadata?: any
+  created_at: string
+}
+
 interface ClientLayoutProps {
-  user: User | null
+  user: SerializedUser | null
   children: React.ReactNode
 }
 

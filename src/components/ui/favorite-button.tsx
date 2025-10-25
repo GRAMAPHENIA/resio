@@ -10,8 +10,10 @@ interface FavoriteButtonProps {
 
 export default function FavoriteButton({ propertyId, className = '' }: FavoriteButtonProps) {
   const [isFavorite, setIsFavorite] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     // Verificar si la propiedad está en favoritos
     if (typeof window !== 'undefined') {
       const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
@@ -38,6 +40,18 @@ export default function FavoriteButton({ propertyId, className = '' }: FavoriteB
       localStorage.setItem('favorites', JSON.stringify(updatedFavorites))
       setIsFavorite(true)
     }
+  }
+
+  // Evitar problemas de hidratación
+  if (!mounted) {
+    return (
+      <button
+        className={`p-2 bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 transition-colors ${className}`}
+        disabled
+      >
+        <Heart className="w-5 h-5 text-neutral-400" />
+      </button>
+    )
   }
 
   return (

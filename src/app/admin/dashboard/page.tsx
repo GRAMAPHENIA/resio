@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Property, Booking } from '@/types/database'
-import { Home, Users, Calendar, TrendingUp, Database, LogOut, Plus, Eye, EyeOff, Edit, Trash2, X } from 'lucide-react'
+import { Home, Users, Calendar, TrendingUp, LogOut, Plus, Eye, EyeOff, Trash2, X } from 'lucide-react'
 import AdminGuard from '@/components/admin/AdminGuard'
+import Logo from '@/components/ui/logo'
+import Link from 'next/link'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -166,9 +168,10 @@ export default function AdminDashboard() {
         {/* Header */}
         <div className="bg-neutral-900 border-b border-neutral-800 px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Database className="w-8 h-8 text-foreground" />
-              <h1 className="text-xl font-bold text-foreground">RESIO Admin</h1>
+            <div className="flex items-center">
+              <Link href="/">
+                <Logo size="sm" />
+              </Link>
             </div>
             <button
               onClick={handleLogout}
