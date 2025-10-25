@@ -12,6 +12,7 @@ export interface Property {
   bathrooms: number
   area: number
   created_at: string
+  updated_at?: string
 }
 
 export interface Booking {
@@ -26,6 +27,18 @@ export interface Booking {
   payment_id?: string
   amount: number
   created_at: string
+  updated_at?: string
+}
+
+export interface BookingStats {
+  property_id: string
+  property_name: string
+  location: string
+  total_bookings: number
+  confirmed_bookings: number
+  pending_bookings: number
+  total_revenue: number
+  avg_booking_value: number
 }
 
 export interface User {

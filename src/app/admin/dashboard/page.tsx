@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Property, Booking } from '@/types/database'
 import { Home, Users, Calendar, TrendingUp, LogOut, Plus, Eye, EyeOff, Trash2, X } from 'lucide-react'
 import AdminGuard from '@/components/admin/AdminGuard'
+import BookingCalendar from '@/components/admin/BookingCalendar'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 
@@ -214,6 +215,15 @@ export default function AdminDashboard() {
                 <Calendar className="w-5 h-5" />
                 Reservas
               </button>
+              <button
+                onClick={() => setActiveTab('calendar')}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${
+                  activeTab === 'calendar' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
+                }`}
+              >
+                <Calendar className="w-5 h-5" />
+                Calendario
+              </button>
             </nav>
           </div>
 
@@ -414,60 +424,138 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+
+            {activeTab === 'calendar' && (
+              <div>
+                <h2 className="text-3xl font-bold text-foreground mb-8">Calendario de Reservas</h2>
+                
+                {/* Filtro por propiedad */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Filtrar por propiedad:
+                  </label>
+                  <select
+                    value={selectedProperty?.id || ''}
+                    onChange={(e) => {
+                      const propertyId = e.target.value
+                      setSelectedProperty(propertyId ? properties.find(p => p.id === propertyId) || null : null)
+                    }}
+                    className="bg-neutral-800 border border-neutral-700 text-foreground px-3 py-2 focus:outline-none focus:ring-2 focus:ring-foreground"
+                  >
+                    <option value="">Todas las propiedades</option>
+                    {properties.map((property) => (
+                      <option key={property.id} value={property.id}>
+                        {property.name} - {property.location}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Calendario */}
+                <BookingCalendar 
+                  bookings={bookings} 
+                  propertyId={selectedProperty?.id}
+                />
+
+                {/* Estadísticas rápidas */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-neutral-900 border border-neutral-800 p-4">
+                    <h4 className="text-sm font-medium text-neutral-400 mb-1">Reservas este mes</h4>
+                    <p className="text-2xl font-bold text-foreground">
+                      {bookings.filter(b => {
+                        const bookingDate = new Date(b.start_date)
+                        const currentMonth = new Date().getMonth()
+                        const currentYear = new Date().getFullYear()
+                        return bookingDate.getMonth() === currentMonth && 
+                               bookingDate.getFullYear() === currentYear &&
+                               b.status === 'paid' &&
+                               (!selectedProperty || b.property_id === selectedProperty.id)
+                      }).length}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-neutral-900 border border-neutral-800 p-4">
+                    <h4 className="text-sm font-medium text-neutral-400 mb-1">Ingresos este mes</h4>
+                    <p className="text-2xl font-bold text-foreground">
+                      ${bookings.filter(b => {
+                        const bookingDate = new Date(b.start_date)
+                        const currentMonth = new Date().getMonth()
+                        const currentYear = new Date().getFullYear()
+                        return bookingDate.getMonth() === currentMonth && 
+                               bookingDate.getFullYear() === currentYear &&
+                               b.status === 'paid' &&
+                               (!selectedProperty || b.property_id === selectedProperty.id)
+                      }).reduce((sum, b) => sum + b.amount, 0).toLocaleString()}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-neutral-900 border border-neutral-800 p-4">
+                    <h4 className="text-sm font-medium text-neutral-400 mb-1">Ocupación promedio</h4>
+                    <p className="text-2xl font-bold text-foreground">
+                      {selectedProperty ? 
+                        Math.round((bookings.filter(b => b.property_id === selectedProperty.id && b.status === 'paid').length / 30) * 100) :
+                        Math.round((bookings.filter(b => b.status === 'paid').length / (properties.length * 30)) * 100)
+                      }%
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Property Calendar Modal */}
-        {selectedProperty && (
+        {selectedProperty && activeTab === 'properties' && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-neutral-900 border border-neutral-800 p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-neutral-900 border border-neutral-800 p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-foreground">
-                  Calendario de Reservas - {selectedProperty.name}
-                </h2>
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Calendario de Reservas - {selectedProperty.name}
+                  </h2>
+                  <div className="text-sm text-neutral-400 mt-1">
+                    <p>Ubicación: {selectedProperty.location} | Precio: ${selectedProperty.price_per_night.toLocaleString()}/noche</p>
+                  </div>
+                </div>
                 <button
                   onClick={() => setSelectedProperty(null)}
-                  className="p-1 hover:bg-neutral-800"
+                  className="p-2 hover:bg-neutral-800 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="space-y-4">
-                <div className="text-sm text-neutral-400 mb-4">
-                  <p>Ubicación: {selectedProperty.location}</p>
-                  <p>Precio por noche: ${selectedProperty.price_per_night.toLocaleString()}</p>
-                </div>
+              <BookingCalendar 
+                bookings={bookings} 
+                propertyId={selectedProperty.id}
+              />
 
-                <div className="bg-neutral-800 p-4">
-                  <h3 className="text-lg font-medium text-foreground mb-4">Reservas Confirmadas</h3>
-                  <div className="space-y-3">
-                    {bookings
-                      .filter(b => b.property_id === selectedProperty.id && b.status === 'paid')
-                      .map((booking) => (
-                        <div key={booking.id} className="bg-neutral-700 p-3 border border-neutral-600">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="font-medium text-foreground">{booking.user_name}</div>
-                              <div className="text-sm text-neutral-400">{booking.user_email}</div>
-                              <div className="text-sm text-neutral-300 mt-1">
-                                Desde: {new Date(booking.start_date).toLocaleDateString('es-ES')} -
-                                Hasta: {new Date(booking.end_date).toLocaleDateString('es-ES')}
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-medium text-green-400">${booking.amount.toLocaleString()}</div>
-                              <div className="text-xs text-green-300">Pagado</div>
-                            </div>
+              <div className="mt-6 bg-neutral-800 p-4">
+                <h3 className="text-lg font-medium text-foreground mb-4">Reservas Confirmadas</h3>
+                <div className="grid gap-3 max-h-60 overflow-y-auto">
+                  {bookings
+                    .filter(b => b.property_id === selectedProperty.id && b.status === 'paid')
+                    .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
+                    .map((booking) => (
+                      <div key={booking.id} className="bg-neutral-700 p-3 border border-neutral-600 flex justify-between items-center">
+                        <div>
+                          <div className="font-medium text-foreground">{booking.user_name}</div>
+                          <div className="text-sm text-neutral-400">{booking.user_email}</div>
+                          <div className="text-sm text-neutral-300 mt-1">
+                            {new Date(booking.start_date).toLocaleDateString('es-ES')} - {new Date(booking.end_date).toLocaleDateString('es-ES')}
                           </div>
                         </div>
-                      ))}
-                    {bookings.filter(b => b.property_id === selectedProperty.id && b.status === 'paid').length === 0 && (
-                      <div className="text-center py-8 text-neutral-400">
-                        No hay reservas confirmadas para esta propiedad
+                        <div className="text-right">
+                          <div className="font-medium text-green-400">${booking.amount.toLocaleString()}</div>
+                          <div className="text-xs text-green-300">Confirmado</div>
+                        </div>
                       </div>
-                    )}
-                  </div>
+                    ))}
+                  {bookings.filter(b => b.property_id === selectedProperty.id && b.status === 'paid').length === 0 && (
+                    <div className="text-center py-8 text-neutral-400">
+                      No hay reservas confirmadas para esta propiedad
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
