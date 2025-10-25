@@ -4,9 +4,9 @@ export const metadata: Metadata = {
   title: "Panel de Administración - RESIO",
   description: "Panel de control para gestionar propiedades y reservas en RESIO Alojamientos.",
   icons: {
-    icon: "/resio-logo-32.svg",
-    shortcut: "/resio-logo-32.svg",
-    apple: "/resio-logo-32.svg",
+    icon: "/resio-logo.png",
+    shortcut: "/resio-logo.png",
+    apple: "/resio-logo.png",
   },
 };
 

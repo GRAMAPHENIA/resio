@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   title: "RESIO Alojamientos - Reserva tu estadía",
   description: "Encuentra y reserva el alojamiento perfecto para tus vacaciones. Sistema simple y seguro de reservas online.",
   icons: {
-    icon: "/resio-logo-32.svg",
-    shortcut: "/resio-logo-32.svg",
-    apple: "/resio-logo-32.svg",
+    icon: "/resio-logo.png",
+    shortcut: "/resio-logo.png",
+    apple: "/resio-logo.png",
   },
 };
 

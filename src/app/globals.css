@@ -58,6 +58,6 @@ body {
 }
 
 /* Estilos para bordes rectos consistentes */
-* {
-  border-radius: 0 !important;
+.border-radius-none {
+  border-radius: 0;
 }

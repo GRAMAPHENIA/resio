@@ -1,17 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
-import { Calendar, Heart, LogOut, ChevronDown, Home } from 'lucide-react'
+import { Calendar, Heart, LogOut, ChevronDown, Home, EllipsisVertical } from 'lucide-react'
 import Image from 'next/image'
 
 interface SerializedUser {
   id: string
   email?: string
-  user_metadata?: any
+  user_metadata?: {
+    full_name?: string
+    avatar_url?: string
+    [key: string]: unknown
+  }
   created_at: string
 }
 
@@ -23,6 +27,8 @@ export default function Navbar({ user }: NavbarProps) {
   const router = useRouter()
   const authService = new AuthService()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   const handleLogout = async () => {
     try {
@@ -34,8 +40,25 @@ export default function Navbar({ user }: NavbarProps) {
     }
   }
 
+  // Cerrar dropdown al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMobileMenuOpen])
+
   return (
-    <nav className="border-b border-neutral-800 bg-background">
+    <nav className="sticky top-0 z-50 border-b border-neutral-800 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
@@ -43,24 +66,43 @@ export default function Navbar({ user }: NavbarProps) {
               <Logo size="sm" />
             </Link>
           </div>
-          
+
           <div className="flex items-center space-x-4">
-            <Link
-              href="/favoritos"
-              className="flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
-            >
-              <Heart className="w-4 h-4" />
-              Favoritos
-            </Link>
-            
-            <Link
-              href="/mis-reservas"
-              className="flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
-            >
-              <Calendar className="w-4 h-4" />
-              Mis Reservas
-            </Link>
-            
+            {/* Menu Button */}
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="flex items-center justify-center w-8 h-8 bg-neutral-900 border border-neutral-800 text-foreground hover:opacity-70 transition-opacity"
+              >
+                <EllipsisVertical className="w-5 h-5" />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isMobileMenuOpen && (
+                <div className="absolute right-0 mt-4 w-50 bg-neutral-900 border border-neutral-800 shadow-lg z-50">
+                  <div className="py-4">
+                    <Link
+                      href="/favoritos"
+                      className="flex items-center gap-3 px-4 py-2 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Heart className="w-4 h-4" />
+                      Favoritos
+                    </Link>
+
+                    <Link
+                      href="/mis-reservas"
+                      className="flex items-center gap-3 px-4 py-2 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Calendar className="w-4 h-4" />
+                      Mis Reservas
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {user ? (
               <>
                 <Link
@@ -70,7 +112,7 @@ export default function Navbar({ user }: NavbarProps) {
                   <Home className="w-4 h-4" />
                   Administrar
                 </Link>
-                
+
                 <div className="relative">
                   <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -135,6 +177,8 @@ export default function Navbar({ user }: NavbarProps) {
             ) : null}
           </div>
         </div>
+
+
       </div>
     </nav>
   )

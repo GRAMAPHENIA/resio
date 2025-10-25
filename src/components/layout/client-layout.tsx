@@ -6,7 +6,11 @@ import Navbar from './navbar'
 interface SerializedUser {
   id: string
   email?: string
-  user_metadata?: any
+  user_metadata?: {
+    full_name?: string
+    avatar_url?: string
+    [key: string]: unknown
+  }
   created_at: string
 }
 
