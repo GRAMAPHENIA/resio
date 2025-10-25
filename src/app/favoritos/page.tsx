@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Heart, ArrowLeft, Home, MapPin } from 'lucide-react'
+import { ArrowLeft, Home, MapPin, Heart } from 'lucide-react'
 import { Property } from '@/types/database'
 import { generateSlug } from '@/utils/slug'
+import Spinner from '@/components/ui/spinner'
 
 export default function FavoritosPage() {
   const [favoriteProperties, setFavoriteProperties] = useState<Property[]>([])
@@ -18,10 +19,10 @@ export default function FavoritosPage() {
       try {
         // Verificar que localStorage esté disponible
         if (typeof window === 'undefined') return
-        
+
         // Obtener IDs de favoritos del localStorage
         const favoritesIds = JSON.parse(localStorage.getItem('favorites') || '[]')
-        
+
         if (favoritesIds.length === 0) {
           setLoading(false)
           return
@@ -49,22 +50,20 @@ export default function FavoritosPage() {
 
   const removeFavorite = (propertyId: string) => {
     if (typeof window === 'undefined') return
-    
+
     const currentFavorites = JSON.parse(localStorage.getItem('favorites') || '[]')
     const updatedFavorites = currentFavorites.filter((id: string) => id !== propertyId)
     localStorage.setItem('favorites', JSON.stringify(updatedFavorites))
-    
+
     setFavoriteProperties(prev => prev.filter(prop => prop.id !== propertyId))
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
-            <p className="mt-2 text-neutral-400">Cargando favoritos...</p>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Spinner size="lg" className="text-foreground" />
+          <p className="mt-6 text-neutral-400 text-lg">Cargando favoritos...</p>
         </div>
       </div>
     )
@@ -73,18 +72,14 @@ export default function FavoritosPage() {
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="mb-8">
           <Link
             href="/"
-            className="flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             Volver al inicio
           </Link>
-          <div className="flex items-center gap-3">
-            <Heart className="w-8 h-8 text-foreground" />
-            <h1 className="text-3xl font-bold text-foreground">Mis Favoritos</h1>
-          </div>
         </div>
 
         {favoriteProperties.length > 0 ? (
@@ -110,12 +105,12 @@ export default function FavoritosPage() {
                     <Heart className="w-5 h-5 text-foreground fill-current" />
                   </button>
                 </div>
-                
+
                 <div className="p-6 flex flex-col flex-grow">
                   <h3 className="text-xl font-semibold text-foreground mb-2">
                     {property.name}
                   </h3>
-                  
+
                   <div className="flex items-center text-neutral-400 mb-3">
                     <MapPin className="w-4 h-4 mr-1" />
                     <span className="text-sm">{property.location}</span>

@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { BookingService, BookingWithProperty } from '@/services/booking.service'
 import { Calendar, MapPin, CreditCard } from 'lucide-react'
 import Link from 'next/link'
+import Spinner from '@/components/ui/spinner'
 
 export default function ReservasPage() {
   const { user } = useAuth()
@@ -61,8 +62,8 @@ export default function ReservasPage() {
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
-            <p className="mt-2 text-neutral-400">Cargando reservas...</p>
+            <Spinner className="text-foreground" />
+            <p className="mt-4 text-neutral-400">Cargando reservas...</p>
           </div>
         </div>
       </div>

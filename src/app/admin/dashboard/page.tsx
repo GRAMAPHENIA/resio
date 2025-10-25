@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Property, Booking } from '@/types/database'
-import { Home, Users, Calendar, TrendingUp, LogOut, Plus, Eye, EyeOff, Trash2, X } from 'lucide-react'
+import { Home, Users, Calendar, TrendingUp, LogOut, Plus, Eye, EyeOff, Trash2, X, Menu, ChevronLeft, BookOpen } from 'lucide-react'
 import AdminGuard from '@/components/admin/AdminGuard'
 import BookingCalendar from '@/components/admin/BookingCalendar'
 import Spinner from '@/components/ui/spinner'
@@ -24,6 +24,7 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [notification, setNotification] = useState<{
     message: string
     type: 'success' | 'error' | 'info'
@@ -186,39 +187,74 @@ export default function AdminDashboard() {
 
         <div className="flex" style={{ height: 'calc(100vh - 65px)' }}>
           {/* Sidebar */}
-          <div className="w-64 bg-neutral-900 border-r border-neutral-800 flex-shrink-0">
-            <nav className="p-4 space-y-2">
+          <div className={`${sidebarExpanded ? 'w-64' : 'w-16'} bg-neutral-900 border-r border-neutral-800 flex-shrink-0 transition-all duration-300 ease-in-out`}>
+            {/* Toggle Button */}
+            <div className="p-3 border-b border-neutral-800">
+              <button
+                onClick={() => setSidebarExpanded(!sidebarExpanded)}
+                className="w-full flex items-center justify-center p-2 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors"
+                title={sidebarExpanded ? "Contraer sidebar" : "Expandir sidebar"}
+              >
+                {sidebarExpanded ? (
+                  <ChevronLeft className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+
+            <nav className="p-2 space-y-2">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${activeTab === 'overview' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
+                className={`w-full flex items-center px-3 py-3 text-left hover:bg-neutral-800 transition-colors relative ${activeTab === 'overview' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
                   }`}
+                title={!sidebarExpanded ? "Resumen" : undefined}
               >
-                <TrendingUp className="w-5 h-5" />
-                Resumen
+                <TrendingUp className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${!sidebarExpanded ? 'mx-auto' : 'ml-0'}`} />
+                {sidebarExpanded && (
+                  <span className="absolute left-12 whitespace-nowrap opacity-0 animate-fade-in">
+                    Resumen
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => setActiveTab('properties')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${activeTab === 'properties' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
+                className={`w-full flex items-center px-3 py-3 text-left hover:bg-neutral-800 transition-colors relative ${activeTab === 'properties' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
                   }`}
+                title={!sidebarExpanded ? "Propiedades" : undefined}
               >
-                <Home className="w-5 h-5" />
-                Propiedades
+                <Home className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${!sidebarExpanded ? 'mx-auto' : 'ml-0'}`} />
+                {sidebarExpanded && (
+                  <span className="absolute left-12 whitespace-nowrap opacity-0 animate-fade-in">
+                    Propiedades
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => setActiveTab('bookings')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${activeTab === 'bookings' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
+                className={`w-full flex items-center px-3 py-3 text-left hover:bg-neutral-800 transition-colors relative ${activeTab === 'bookings' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
                   }`}
+                title={!sidebarExpanded ? "Reservas" : undefined}
               >
-                <Calendar className="w-5 h-5" />
-                Reservas
+                <BookOpen className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${!sidebarExpanded ? 'mx-auto' : 'ml-0'}`} />
+                {sidebarExpanded && (
+                  <span className="absolute left-12 whitespace-nowrap opacity-0 animate-fade-in">
+                    Reservas
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => setActiveTab('calendar')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${activeTab === 'calendar' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
+                className={`w-full flex items-center px-3 py-3 text-left hover:bg-neutral-800 transition-colors relative ${activeTab === 'calendar' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
                   }`}
+                title={!sidebarExpanded ? "Calendario" : undefined}
               >
-                <Calendar className="w-5 h-5" />
-                Calendario
+                <Calendar className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${!sidebarExpanded ? 'mx-auto' : 'ml-0'}`} />
+                {sidebarExpanded && (
+                  <span className="absolute left-12 whitespace-nowrap opacity-0 animate-fade-in">
+                    Calendario
+                  </span>
+                )}
               </button>
             </nav>
           </div>
@@ -485,10 +521,16 @@ export default function AdminDashboard() {
                   <div className="bg-neutral-900 border border-neutral-800 p-4">
                     <h4 className="text-sm font-medium text-neutral-400 mb-1">Ocupación promedio</h4>
                     <p className="text-2xl font-bold text-foreground">
-                      {selectedProperty ?
-                        Math.round((bookings.filter(b => b.property_id === selectedProperty.id && b.status === 'paid').length / 30) * 100) :
-                        Math.round((bookings.filter(b => b.status === 'paid').length / (properties.length * 30)) * 100)
-                      }%
+                      {(() => {
+                        if (selectedProperty) {
+                          const propertyBookings = bookings.filter(b => b.property_id === selectedProperty.id && b.status === 'paid').length
+                          return propertyBookings > 0 ? Math.round((propertyBookings / 30) * 100) : 0
+                        } else {
+                          const totalBookings = bookings.filter(b => b.status === 'paid').length
+                          const totalProperties = properties.length
+                          return totalProperties > 0 ? Math.round((totalBookings / (totalProperties * 30)) * 100) : 0
+                        }
+                      })()}%
                     </p>
                   </div>
                 </div>
