@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Spinner from '@/components/ui/spinner'
 
 export default function AdminPage() {
   const router = useRouter()
@@ -19,8 +20,8 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
-        <p className="mt-2 text-neutral-400">Redirigiendo...</p>
+        <Spinner className="text-foreground" />
+        <p className="mt-4 text-neutral-400">Redirigiendo...</p>
       </div>
     </div>
   )

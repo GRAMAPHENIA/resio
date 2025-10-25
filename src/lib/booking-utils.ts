@@ -112,7 +112,7 @@ export async function updateBookingStatus(
 ): Promise<Booking | null> {
   const supabase = createClient()
   
-  const updateData: any = { status }
+  const updateData: { status: string; payment_id?: string } = { status }
   if (paymentId) {
     updateData.payment_id = paymentId
   }

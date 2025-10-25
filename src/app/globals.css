@@ -62,3 +62,49 @@ body {
 .border-radius-none {
   border-radius: 0;
 }
+
+/* Estilos personalizados para scrollbar */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2a2a2c;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4a4a4c;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5a5a5c;
+}
+
+::-webkit-scrollbar-corner {
+  background: #2a2a2c;
+}
+
+/* Para Firefox */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: #4a4a4c #2a2a2c;
+}
+
+/* Spinner cuadrado personalizado con opacidad */
+.spinner-square {
+  width: 32px;
+  height: 32px;
+  border: 2px solid currentColor;
+  animation: spin-smooth 2s ease-in-out infinite, fade-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin-smooth {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fade-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}

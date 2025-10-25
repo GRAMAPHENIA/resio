@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
 import { Booking } from '@/types/database'
 
@@ -26,11 +26,28 @@ export default function BookingCalendar({ bookings, propertyId }: BookingCalenda
 
   const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
-  useEffect(() => {
-    generateCalendarDays()
-  }, [currentDate, bookings, propertyId])
+  const getBookingsForDate = useCallback((date: Date): Booking[] => {
+    const dateStr = date.toISOString().split('T')[0]
+    
+    return bookings.filter(booking => {
+      // Filtrar por propiedad si se especifica
+      if (propertyId && booking.property_id !== propertyId) {
+        return false
+      }
+      
+      // Solo mostrar reservas pagadas
+      if (booking.status !== 'paid') {
+        return false
+      }
+      
+      const startDate = booking.start_date
+      const endDate = booking.end_date
+      
+      return dateStr >= startDate && dateStr <= endDate
+    })
+  }, [bookings, propertyId])
 
-  const generateCalendarDays = () => {
+  const generateCalendarDays = useCallback(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
     
@@ -63,28 +80,11 @@ export default function BookingCalendar({ bookings, propertyId }: BookingCalenda
     }
     
     setCalendarDays(days)
-  }
+  }, [currentDate, getBookingsForDate])
 
-  const getBookingsForDate = (date: Date): Booking[] => {
-    const dateStr = date.toISOString().split('T')[0]
-    
-    return bookings.filter(booking => {
-      // Filtrar por propiedad si se especifica
-      if (propertyId && booking.property_id !== propertyId) {
-        return false
-      }
-      
-      // Solo mostrar reservas pagadas
-      if (booking.status !== 'paid') {
-        return false
-      }
-      
-      const startDate = booking.start_date
-      const endDate = booking.end_date
-      
-      return dateStr >= startDate && dateStr <= endDate
-    })
-  }
+  useEffect(() => {
+    generateCalendarDays()
+  }, [generateCalendarDays])
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate)
@@ -157,7 +157,7 @@ export default function BookingCalendar({ bookings, propertyId }: BookingCalenda
         {calendarDays.map((day, index) => (
           <div
             key={index}
-            className={`min-h-[100px] p-2 border border-neutral-700 ${
+            className={`min-h-[50px] p-2 border border-neutral-700 ${
               day.isCurrentMonth ? 'bg-neutral-800' : 'bg-neutral-900'
             } ${isToday(day.date) ? 'ring-2 ring-foreground' : ''}`}
           >

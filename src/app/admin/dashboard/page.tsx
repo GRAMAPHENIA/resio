@@ -7,6 +7,7 @@ import { Property, Booking } from '@/types/database'
 import { Home, Users, Calendar, TrendingUp, LogOut, Plus, Eye, EyeOff, Trash2, X } from 'lucide-react'
 import AdminGuard from '@/components/admin/AdminGuard'
 import BookingCalendar from '@/components/admin/BookingCalendar'
+import Spinner from '@/components/ui/spinner'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 
@@ -142,10 +143,10 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <AdminGuard>
-        <div className="min-h-screen bg-background p-6">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
-            <p className="mt-2 text-neutral-400">Cargando panel de administración...</p>
+        <div className="h-screen bg-background overflow-hidden flex items-center justify-center">
+          <div className="text-center">
+            <Spinner className="text-foreground" />
+            <p className="mt-4 text-neutral-400">Cargando panel de administración...</p>
           </div>
         </div>
       </AdminGuard>
@@ -154,14 +155,13 @@ export default function AdminDashboard() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-background">
+      <div className="h-screen bg-background overflow-hidden">
         {/* Notification */}
         {notification && (
-          <div className={`fixed top-4 right-4 z-50 p-4 border ${
-            notification.type === 'success' ? 'bg-green-900 border-green-700 text-green-300' :
+          <div className={`fixed top-4 right-4 z-50 p-4 border ${notification.type === 'success' ? 'bg-green-900 border-green-700 text-green-300' :
             notification.type === 'error' ? 'bg-red-900 border-red-700 text-red-300' :
-            'bg-blue-900 border-blue-700 text-blue-300'
-          }`}>
+              'bg-blue-900 border-blue-700 text-blue-300'
+            }`}>
             {notification.message}
           </div>
         )}
@@ -184,42 +184,38 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="flex">
+        <div className="flex" style={{ height: 'calc(100vh - 65px)' }}>
           {/* Sidebar */}
-          <div className="w-64 bg-neutral-900 border-r border-neutral-800 min-h-screen">
+          <div className="w-64 bg-neutral-900 border-r border-neutral-800 flex-shrink-0">
             <nav className="p-4 space-y-2">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${
-                  activeTab === 'overview' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${activeTab === 'overview' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
+                  }`}
               >
                 <TrendingUp className="w-5 h-5" />
                 Resumen
               </button>
               <button
                 onClick={() => setActiveTab('properties')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${
-                  activeTab === 'properties' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${activeTab === 'properties' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
+                  }`}
               >
                 <Home className="w-5 h-5" />
                 Propiedades
               </button>
               <button
                 onClick={() => setActiveTab('bookings')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${
-                  activeTab === 'bookings' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${activeTab === 'bookings' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
+                  }`}
               >
                 <Calendar className="w-5 h-5" />
                 Reservas
               </button>
               <button
                 onClick={() => setActiveTab('calendar')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${
-                  activeTab === 'calendar' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-800 transition-colors ${activeTab === 'calendar' ? 'bg-neutral-800 text-foreground' : 'text-neutral-400'
+                  }`}
               >
                 <Calendar className="w-5 h-5" />
                 Calendario
@@ -228,7 +224,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 p-6">
+          <div className="flex-1 overflow-y-auto p-6">
             {activeTab === 'overview' && (
               <div>
                 <h2 className="text-3xl font-bold text-foreground mb-8">Resumen del Sistema</h2>
@@ -282,7 +278,7 @@ export default function AdminDashboard() {
                     Agregar Propiedad
                   </button>
                 </div>
-                
+
                 <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
@@ -305,9 +301,8 @@ export default function AdminDashboard() {
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{property.location}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">${property.price_per_night.toLocaleString()}</td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex px-2 py-1 text-xs font-semibold ${
-                                  property.available ? 'bg-green-900 text-green-300' : 'bg-neutral-700 text-neutral-400'
-                                }`}>
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold ${property.available ? 'bg-green-900 text-green-300' : 'bg-neutral-700 text-neutral-400'
+                                  }`}>
                                   {property.available ? 'Publicada' : 'Borrador'}
                                 </span>
                               </td>
@@ -328,11 +323,10 @@ export default function AdminDashboard() {
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => togglePropertyAvailability(property.id, property.available)}
-                                    className={`px-2 py-1 text-xs ${
-                                      property.available
-                                        ? 'bg-yellow-900 text-yellow-300 hover:bg-yellow-800'
-                                        : 'bg-green-900 text-green-300 hover:bg-green-800'
-                                    }`}
+                                    className={`px-2 py-1 text-xs ${property.available
+                                      ? 'bg-yellow-900 text-yellow-300 hover:bg-yellow-800'
+                                      : 'bg-green-900 text-green-300 hover:bg-green-800'
+                                      }`}
                                   >
                                     {property.available ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                                   </button>
@@ -395,15 +389,14 @@ export default function AdminDashboard() {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold ${
-                                booking.status === 'paid'
-                                  ? 'bg-green-900 text-green-300'
-                                  : booking.status === 'pending'
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold ${booking.status === 'paid'
+                                ? 'bg-green-900 text-green-300'
+                                : booking.status === 'pending'
                                   ? 'bg-yellow-900 text-yellow-300'
                                   : 'bg-red-900 text-red-300'
-                              }`}>
+                                }`}>
                                 {booking.status === 'paid' ? 'Pagado' :
-                                 booking.status === 'pending' ? 'Pendiente' : 'Cancelado'}
+                                  booking.status === 'pending' ? 'Pendiente' : 'Cancelado'}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
@@ -428,7 +421,7 @@ export default function AdminDashboard() {
             {activeTab === 'calendar' && (
               <div>
                 <h2 className="text-3xl font-bold text-foreground mb-8">Calendario de Reservas</h2>
-                
+
                 {/* Filtro por propiedad */}
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-foreground mb-2">
@@ -452,8 +445,8 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Calendario */}
-                <BookingCalendar 
-                  bookings={bookings} 
+                <BookingCalendar
+                  bookings={bookings}
                   propertyId={selectedProperty?.id}
                 />
 
@@ -466,14 +459,14 @@ export default function AdminDashboard() {
                         const bookingDate = new Date(b.start_date)
                         const currentMonth = new Date().getMonth()
                         const currentYear = new Date().getFullYear()
-                        return bookingDate.getMonth() === currentMonth && 
-                               bookingDate.getFullYear() === currentYear &&
-                               b.status === 'paid' &&
-                               (!selectedProperty || b.property_id === selectedProperty.id)
+                        return bookingDate.getMonth() === currentMonth &&
+                          bookingDate.getFullYear() === currentYear &&
+                          b.status === 'paid' &&
+                          (!selectedProperty || b.property_id === selectedProperty.id)
                       }).length}
                     </p>
                   </div>
-                  
+
                   <div className="bg-neutral-900 border border-neutral-800 p-4">
                     <h4 className="text-sm font-medium text-neutral-400 mb-1">Ingresos este mes</h4>
                     <p className="text-2xl font-bold text-foreground">
@@ -481,18 +474,18 @@ export default function AdminDashboard() {
                         const bookingDate = new Date(b.start_date)
                         const currentMonth = new Date().getMonth()
                         const currentYear = new Date().getFullYear()
-                        return bookingDate.getMonth() === currentMonth && 
-                               bookingDate.getFullYear() === currentYear &&
-                               b.status === 'paid' &&
-                               (!selectedProperty || b.property_id === selectedProperty.id)
+                        return bookingDate.getMonth() === currentMonth &&
+                          bookingDate.getFullYear() === currentYear &&
+                          b.status === 'paid' &&
+                          (!selectedProperty || b.property_id === selectedProperty.id)
                       }).reduce((sum, b) => sum + b.amount, 0).toLocaleString()}
                     </p>
                   </div>
-                  
+
                   <div className="bg-neutral-900 border border-neutral-800 p-4">
                     <h4 className="text-sm font-medium text-neutral-400 mb-1">Ocupación promedio</h4>
                     <p className="text-2xl font-bold text-foreground">
-                      {selectedProperty ? 
+                      {selectedProperty ?
                         Math.round((bookings.filter(b => b.property_id === selectedProperty.id && b.status === 'paid').length / 30) * 100) :
                         Math.round((bookings.filter(b => b.status === 'paid').length / (properties.length * 30)) * 100)
                       }%
@@ -525,8 +518,8 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
-              <BookingCalendar 
-                bookings={bookings} 
+              <BookingCalendar
+                bookings={bookings}
                 propertyId={selectedProperty.id}
               />
 

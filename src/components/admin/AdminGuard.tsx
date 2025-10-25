@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Spinner from '@/components/ui/spinner'
 
 interface AdminGuardProps {
   children: React.ReactNode
@@ -30,8 +31,8 @@ export default function AdminGuard({ children }: AdminGuardProps) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
-          <p className="mt-2 text-neutral-400">Verificando acceso...</p>
+          <Spinner className="text-foreground" />
+          <p className="mt-4 text-neutral-400">Verificando acceso...</p>
         </div>
       </div>
     )
