@@ -7,54 +7,63 @@ import Image from 'next/image'
 import { ArrowLeft, Home, MapPin, Heart } from 'lucide-react'
 import { Property } from '@/types/database'
 import { generateSlug } from '@/utils/slug'
+import { useFavorites } from '@/hooks/useFavorites'
 import Spinner from '@/components/ui/spinner'
 
 export default function FavoritosPage() {
   const [favoriteProperties, setFavoriteProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
+  const { favorites, removeFavorite, mounted } = useFavorites()
   const supabase = createClient()
 
   useEffect(() => {
     const loadFavorites = async () => {
       try {
-        // Verificar que localStorage esté disponible
-        if (typeof window === 'undefined') return
-
-        // Obtener IDs de favoritos del localStorage
-        const favoritesIds = JSON.parse(localStorage.getItem('favorites') || '[]')
-
-        if (favoritesIds.length === 0) {
-          setLoading(false)
+        // Esperar a que el componente esté montado
+        if (!mounted) {
           return
         }
+
+        // Si no hay favoritos, mostrar página vacía
+        if (favorites.length === 0) {
+          setLoading(false)
+          setFavoriteProperties([])
+          return
+        }
+
+        setLoading(true)
 
         // Obtener las propiedades favoritas de la base de datos
         const { data: properties, error } = await supabase
           .from('properties')
           .select('*')
-          .in('id', favoritesIds)
-          .eq('available', true)
+          .in('id', favorites)
+          // No filtrar por available para mostrar todas las propiedades favoritas
 
         if (!error && properties) {
-          setFavoriteProperties(properties)
+          // Ordenar las propiedades según el orden en favorites
+          const orderedProperties = favorites
+            .map(id => properties.find(prop => prop.id === id))
+            .filter(Boolean) as Property[]
+          
+          setFavoriteProperties(orderedProperties)
+        } else {
+          console.error('Error fetching properties:', error)
+          setFavoriteProperties([])
         }
       } catch (error) {
         console.error('Error loading favorites:', error)
+        setFavoriteProperties([])
       } finally {
         setLoading(false)
       }
     }
 
     loadFavorites()
-  }, [supabase])
+  }, [supabase, favorites, mounted])
 
-  const removeFavorite = (propertyId: string) => {
-    if (typeof window === 'undefined') return
-
-    const currentFavorites = JSON.parse(localStorage.getItem('favorites') || '[]')
-    const updatedFavorites = currentFavorites.filter((id: string) => id !== propertyId)
-    localStorage.setItem('favorites', JSON.stringify(updatedFavorites))
-
+  const handleRemoveFavorite = (propertyId: string) => {
+    removeFavorite(propertyId)
     setFavoriteProperties(prev => prev.filter(prop => prop.id !== propertyId))
   }
 
@@ -99,7 +108,7 @@ export default function FavoritosPage() {
                     <Home className="w-12 h-12 text-neutral-500" />
                   )}
                   <button
-                    onClick={() => removeFavorite(property.id)}
+                    onClick={() => handleRemoveFavorite(property.id)}
                     className="absolute top-3 right-3 p-2 bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 transition-colors"
                   >
                     <Heart className="w-5 h-5 text-foreground fill-current" />
@@ -156,6 +165,8 @@ export default function FavoritosPage() {
           </div>
         )}
       </div>
+      
+
     </div>
   )
 }
