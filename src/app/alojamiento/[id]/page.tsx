@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import BookingForm from '@/components/booking/BookingForm'
+import ImageGallery from '@/components/property/ImageGallery'
+import AvailabilityCalendar from '@/components/property/AvailabilityCalendar'
 import { MapPin, Bed, Bath, Square, Wifi, Car, Coffee, Home } from 'lucide-react'
 
 interface AlojamientoDetailPageProps {
@@ -39,15 +41,10 @@ export default async function AlojamientoDetailPage({ params }: AlojamientoDetai
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Información del alojamiento */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-8">
             <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
               {/* Galería de imágenes */}
-              <div className="h-96 bg-neutral-700 flex items-center justify-center">
-                <div className="text-center">
-                  <Home className="w-20 h-20 text-neutral-500 mx-auto mb-4" />
-                  <span className="text-neutral-400 text-lg">Galería de fotos próximamente</span>
-                </div>
-              </div>
+              <ImageGallery images={property.images || []} propertyName={property.name} />
               
               <div className="p-8">
                 <h1 className="text-4xl font-bold text-foreground mb-4">
@@ -127,6 +124,9 @@ export default async function AlojamientoDetailPage({ params }: AlojamientoDetai
                 </div>
               </div>
             </div>
+
+            {/* Calendario de disponibilidad */}
+            <AvailabilityCalendar propertyId={property.id} />
           </div>
 
           {/* Formulario de reserva */}
