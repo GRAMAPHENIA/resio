@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { BookingService, BookingWithProperty } from '@/services/booking.service'
-import { Calendar, MapPin, CreditCard, CalendarDays } from 'lucide-react'
+import { Calendar, MapPin, CreditCard, CalendarDays, Eye, Download, Filter } from 'lucide-react'
 import Link from 'next/link'
 import Spinner from '@/components/ui/spinner'
 import BookingCalendar from '@/components/calendar/BookingCalendar'
@@ -16,6 +16,7 @@ export default function ReservasPage() {
   const [error, setError] = useState('')
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'pending' | 'cancelled'>('all')
 
   const loadBookings = useCallback(async () => {
     if (!user?.email) return
@@ -110,6 +111,36 @@ export default function ReservasPage() {
           </div>
         </div>
 
+        {/* Filtros */}
+        {viewMode === 'list' && bookings.length > 0 && (
+          <div className="mb-6 flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-neutral-400" />
+              <span className="text-sm text-neutral-400">Filtrar por estado:</span>
+            </div>
+            <div className="flex gap-2">
+              {[
+                { key: 'all', label: 'Todas' },
+                { key: 'paid', label: 'Confirmadas' },
+                { key: 'pending', label: 'Pendientes' },
+                { key: 'cancelled', label: 'Canceladas' }
+              ].map(({ key, label }: { key: string; label: string }) => (
+                <button
+                  key={key}
+                  onClick={() => setFilterStatus(key as 'all' | 'paid' | 'pending' | 'cancelled')}
+                  className={`px-3 py-1 text-sm transition-colors ${
+                    filterStatus === key
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="bg-red-900/20 border border-red-800 text-red-400 px-4 py-3 mb-6">
             {error}
@@ -200,7 +231,9 @@ export default function ReservasPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {bookings.map((booking) => (
+            {bookings
+              .filter(booking => filterStatus === 'all' || booking.status === filterStatus)
+              .map((booking) => (
               <div key={booking.id} className="bg-neutral-900 border border-neutral-800 p-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
                   <div>
@@ -259,17 +292,39 @@ export default function ReservasPage() {
                     )}
                   </div>
                   
-                  {booking.status === 'pending' && (
-                    <button
-                      onClick={() => {
-                        // Aquí podrías implementar la lógica para reintento de pago
-                        alert('Funcionalidad de reintento de pago próximamente')
-                      }}
-                      className="text-sm bg-foreground text-background px-4 py-2 hover:bg-neutral-200 transition-colors"
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/reservas/detalle/${booking.id}`}
+                      className="flex items-center gap-2 text-sm bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition-colors"
                     >
-                      Completar pago
-                    </button>
-                  )}
+                      <Eye className="w-4 h-4" />
+                      Ver detalles
+                    </Link>
+                    
+                    {booking.status === 'pending' && (
+                      <button
+                        onClick={() => {
+                          // Aquí podrías implementar la lógica para reintento de pago
+                          alert('Funcionalidad de reintento de pago próximamente')
+                        }}
+                        className="text-sm bg-yellow-600 text-white px-4 py-2 hover:bg-yellow-700 transition-colors"
+                      >
+                        Completar pago
+                      </button>
+                    )}
+                    
+                    {booking.status === 'paid' && (
+                      <button
+                        onClick={() => {
+                          alert('Funcionalidad de descarga próximamente')
+                        }}
+                        className="flex items-center gap-2 text-sm bg-neutral-700 text-neutral-300 px-4 py-2 hover:bg-neutral-600 transition-colors"
+                      >
+                        <Download className="w-4 h-4" />
+                        PDF
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

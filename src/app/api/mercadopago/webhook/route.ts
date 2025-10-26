@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { BookingService } from '@/services/booking.service'
 import { MercadoPagoService } from '@/services/mercadopago.service'
+import { EmailService } from '@/services/email.service'
 import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
@@ -67,6 +68,20 @@ export async function POST(request: NextRequest) {
             bookingStatus
           )
           console.log(`Booking ${bookingId} updated to ${bookingStatus}`)
+
+          // Enviar email de confirmación si el pago fue aprobado
+          if (bookingStatus === 'paid') {
+            try {
+              const booking = await BookingService.getBookingById(bookingId)
+              if (booking) {
+                const emailTemplate = EmailService.createBookingConfirmationEmail(booking)
+                await EmailService.sendEmail(emailTemplate)
+                console.log(`Confirmation email sent to ${booking.user_email}`)
+              }
+            } catch (emailError) {
+              console.error('Error sending confirmation email:', emailError)
+            }
+          }
         }
       }
     }
@@ -122,6 +137,20 @@ export async function GET(request: NextRequest) {
             bookingStatus
           )
           console.log(`Booking ${bookingId} updated to ${bookingStatus} via GET`)
+
+          // Enviar email de confirmación si el pago fue aprobado
+          if (bookingStatus === 'paid') {
+            try {
+              const booking = await BookingService.getBookingById(bookingId)
+              if (booking) {
+                const emailTemplate = EmailService.createBookingConfirmationEmail(booking)
+                await EmailService.sendEmail(emailTemplate)
+                console.log(`Confirmation email sent to ${booking.user_email}`)
+              }
+            } catch (emailError) {
+              console.error('Error sending confirmation email:', emailError)
+            }
+          }
         }
       }
     }
