@@ -24,7 +24,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verificar disponibilidad
+    // Limpiar reservas pendientes vencidas antes de verificar disponibilidad
+    await BookingService.cleanupExpiredPendingBookings()
+
+    // Verificar disponibilidad (solo considera reservas pagadas)
     const isAvailable = await BookingService.checkAvailability(property_id, start_date, end_date)
     if (!isAvailable) {
       return NextResponse.json(

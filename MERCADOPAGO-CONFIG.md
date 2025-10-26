@@ -60,12 +60,111 @@ Para probar los pagos, usa las [tarjetas de prueba de MercadoPago](https://www.m
 ✅ Páginas de resultado (éxito, fallo, pendiente)
 ✅ Gestión de reservas
 ✅ Verificación de disponibilidad
-✅ Webhook para notificaciones (básico)
+✅ Webhook para notificaciones completo
+✅ Verificación de pagos en tiempo real
+✅ Calendario de reservas integrado
+✅ Dashboard con estadísticas
+✅ API de estado de pagos
+✅ Actualización automática de reservas
+
+## APIs Disponibles
+
+### Crear Preferencia de Pago
+```
+POST /api/mercadopago/create-preference
+```
+
+### Webhook de Notificaciones
+```
+POST /api/mercadopago/webhook
+GET /api/mercadopago/webhook
+```
+
+### Verificar Estado de Pago
+```
+GET /api/payment-status?payment_id=123
+POST /api/payment-status
+```
+
+### Calendario de Reservas
+```
+GET /api/calendar?type=events&property_id=123
+GET /api/calendar?type=availability&property_id=123&year=2024&month=12
+GET /api/calendar?type=stats&property_id=123
+```
+
+## Componentes Disponibles
+
+### BookingCalendar
+Componente de calendario para mostrar reservas con estadísticas integradas.
+
+```tsx
+import BookingCalendar from '@/components/calendar/BookingCalendar'
+
+<BookingCalendar 
+  propertyId="123" // Opcional, sin esto muestra todas las propiedades
+  onEventClick={(event) => console.log(event)}
+/>
+```
+
+## Servicios
+
+### MercadoPagoService
+- `createPreference()` - Crear preferencia de pago
+- `getPayment()` - Obtener detalles de un pago
+- `verifyPayment()` - Verificar pago con validaciones
+
+### BookingService
+- `createBooking()` - Crear nueva reserva
+- `updateBookingPayment()` - Actualizar estado de pago
+- `getBookingsByUser()` - Obtener reservas de un usuario
+- `checkAvailability()` - Verificar disponibilidad
+
+### CalendarService
+- `getPropertyCalendar()` - Obtener eventos de una propiedad
+- `getAllBookingsCalendar()` - Obtener todos los eventos
+- `checkAvailability()` - Verificar disponibilidad
+- `getMonthAvailability()` - Disponibilidad mensual
+- `getOccupancyStats()` - Estadísticas de ocupación
+
+## Gestión de Disponibilidad
+
+### ✅ Problema Resuelto: Reservas sin pagar bloqueaban disponibilidad
+
+**Antes:**
+- Las reservas `pending` (sin pagar) bloqueaban fechas
+- Usuarios no podían reservar fechas "ocupadas" por reservas no pagadas
+
+**Ahora:**
+- Solo las reservas `paid` (pagadas) bloquean disponibilidad
+- Las reservas `pending` se muestran en el calendario pero NO bloquean fechas
+- Limpieza automática de reservas pendientes vencidas (30 minutos)
+
+### Funciones de Disponibilidad
+
+```typescript
+// Solo considera reservas pagadas
+BookingService.checkAvailability(propertyId, startDate, endDate)
+
+// Incluye reservas pendientes (para casos especiales)
+BookingService.checkAvailabilityIncludingPending(propertyId, startDate, endDate)
+
+// Limpia reservas pendientes vencidas
+BookingService.cleanupExpiredPendingBookings()
+```
+
+### Cron Job Automático
+
+- **Frecuencia:** Cada 15 minutos
+- **Función:** Cancela reservas pendientes de más de 30 minutos
+- **Configurado en:** `vercel.json`
 
 ## Próximos Pasos
 
-- [ ] Implementar verificación completa de pagos en webhook
 - [ ] Agregar notificaciones por email
 - [ ] Implementar reembolsos
 - [ ] Agregar más métodos de pago
 - [ ] Implementar pagos en cuotas
+- [ ] Exportar calendario a formatos estándar (iCal)
+- [ ] Notificaciones push para nuevas reservas
+- [ ] Configurar tiempo de expiración personalizable para reservas pendientes

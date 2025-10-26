@@ -39,7 +39,7 @@ export class BookingService {
     return booking
   }
 
-  static async updateBookingPayment(bookingId: string, paymentId: string, status: 'paid' | 'cancelled'): Promise<void> {
+  static async updateBookingPayment(bookingId: string, paymentId: string, status: 'paid' | 'cancelled' | 'pending'): Promise<void> {
     const { error } = await this.supabase
       .from('bookings')
       .update({
@@ -88,18 +88,72 @@ export class BookingService {
     return data as BookingWithProperty
   }
 
-  static async checkAvailability(propertyId: string, startDate: string, endDate: string): Promise<boolean> {
-    const { data, error } = await this.supabase
+  static async checkAvailability(propertyId: string, startDate: string, endDate: string, excludeBookingId?: string): Promise<boolean> {
+    let query = this.supabase
       .from('bookings')
       .select('id')
       .eq('property_id', propertyId)
-      .neq('status', 'cancelled')
+      .eq('status', 'paid') // Solo considerar reservas PAGADAS como ocupadas
       .or(`start_date.lte.${endDate},end_date.gte.${startDate}`)
+
+    // Excluir una reserva específica (útil para actualizaciones)
+    if (excludeBookingId) {
+      query = query.neq('id', excludeBookingId)
+    }
+
+    const { data, error } = await query
 
     if (error) {
       throw new Error(`Error al verificar disponibilidad: ${error.message}`)
     }
 
     return data.length === 0
+  }
+
+  static async checkAvailabilityIncludingPending(propertyId: string, startDate: string, endDate: string, excludeBookingId?: string): Promise<boolean> {
+    let query = this.supabase
+      .from('bookings')
+      .select('id')
+      .eq('property_id', propertyId)
+      .neq('status', 'cancelled') // Incluir pending y paid
+      .or(`start_date.lte.${endDate},end_date.gte.${startDate}`)
+
+    if (excludeBookingId) {
+      query = query.neq('id', excludeBookingId)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      throw new Error(`Error al verificar disponibilidad: ${error.message}`)
+    }
+
+    return data.length === 0
+  }
+
+  static async cleanupExpiredPendingBookings(): Promise<void> {
+    // Cancelar reservas pendientes de más de 30 minutos
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+    
+    const { error } = await this.supabase
+      .from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('status', 'pending')
+      .lt('created_at', thirtyMinutesAgo)
+
+    if (error) {
+      console.error('Error cleaning up expired bookings:', error)
+    }
+  }
+
+  static async deleteBooking(bookingId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('bookings')
+      .delete()
+      .eq('id', bookingId)
+
+    if (error) {
+      throw new Error(`Error al eliminar la reserva: ${error.message}`)
+    }
   }
 }

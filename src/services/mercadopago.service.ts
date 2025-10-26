@@ -1,4 +1,4 @@
-import { MercadoPagoConfig, Preference } from 'mercadopago'
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago'
 
 // Configurar MercadoPago
 const client = new MercadoPagoConfig({
@@ -7,6 +7,7 @@ const client = new MercadoPagoConfig({
 })
 
 const preference = new Preference(client)
+const payment = new Payment(client)
 
 export interface CreatePreferenceData {
   title: string
@@ -25,6 +26,23 @@ export interface PreferenceResponse {
   id: string
   init_point: string
   sandbox_init_point: string
+}
+
+export interface PaymentDetails {
+  id: number
+  status: string
+  status_detail: string
+  external_reference: string
+  transaction_amount: number
+  date_created: string
+  date_approved?: string
+  payer: {
+    email: string
+    identification?: {
+      type: string
+      number: string
+    }
+  }
 }
 
 export class MercadoPagoService {
@@ -68,6 +86,51 @@ export class MercadoPagoService {
     } catch (error) {
       console.error('Error creating MercadoPago preference:', error)
       throw new Error('Error al crear la preferencia de pago')
+    }
+  }
+
+  static async getPayment(paymentId: string | number): Promise<PaymentDetails | null> {
+    try {
+      const response = await payment.get({ id: paymentId })
+      
+      if (!response) return null
+
+      return {
+        id: response.id!,
+        status: response.status!,
+        status_detail: response.status_detail!,
+        external_reference: response.external_reference!,
+        transaction_amount: response.transaction_amount!,
+        date_created: response.date_created!,
+        date_approved: response.date_approved || undefined,
+        payer: {
+          email: response.payer?.email || '',
+          identification: response.payer?.identification ? {
+            type: response.payer.identification.type || '',
+            number: response.payer.identification.number || ''
+          } : undefined
+        }
+      }
+    } catch (error) {
+      console.error('Error getting payment details:', error)
+      return null
+    }
+  }
+
+  static async verifyPayment(paymentId: string | number, expectedAmount: number, expectedReference: string): Promise<boolean> {
+    try {
+      const paymentDetails = await this.getPayment(paymentId)
+      
+      if (!paymentDetails) return false
+
+      return (
+        paymentDetails.status === 'approved' &&
+        paymentDetails.transaction_amount === expectedAmount &&
+        paymentDetails.external_reference === expectedReference
+      )
+    } catch (error) {
+      console.error('Error verifying payment:', error)
+      return false
     }
   }
 }
