@@ -127,12 +127,22 @@ export default function BookingCalendar({ propertyId, onEventClick }: BookingCal
     })
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string, createdAt?: string) => {
     switch (status) {
       case 'confirmed':
         return 'bg-green-600'
       case 'pending':
-        return 'bg-yellow-600'
+        // Verificar si es una reserva pendiente reciente (menos de 30 min)
+        if (createdAt) {
+          const created = new Date(createdAt).getTime()
+          const now = Date.now()
+          const thirtyMinutes = 30 * 60 * 1000
+          
+          if (now - created < thirtyMinutes) {
+            return 'bg-orange-600 animate-pulse' // Pendiente reciente
+          }
+        }
+        return 'bg-yellow-600' // Pendiente que puede expirar pronto
       default:
         return 'bg-gray-600'
     }
@@ -245,18 +255,30 @@ export default function BookingCalendar({ propertyId, onEventClick }: BookingCal
               >
                 <div className="text-sm text-foreground mb-1">{day}</div>
                 <div className="space-y-1">
-                  {dayEvents.slice(0, 2).map(event => (
-                    <div
-                      key={event.id}
-                      onClick={() => onEventClick?.(event)}
-                      className={`text-xs p-1 rounded cursor-pointer ${getStatusColor(event.status)} text-white truncate ${
-                        event.status === 'pending' ? 'opacity-70 border border-yellow-400' : ''
-                      }`}
-                      title={`${event.title} - $${event.amount.toLocaleString('es-AR')} - ${event.status === 'confirmed' ? 'Confirmada' : 'Pendiente de pago'}`}
-                    >
-                      {event.guest_name}
-                    </div>
-                  ))}
+                  {dayEvents.slice(0, 2).map(event => {
+                    const isRecentPending = event.status === 'pending' && 
+                      (Date.now() - new Date(event.created_at).getTime()) < (30 * 60 * 1000)
+                    
+                    return (
+                      <div
+                        key={event.id}
+                        onClick={() => onEventClick?.(event)}
+                        className={`text-xs p-1 rounded cursor-pointer ${getStatusColor(event.status, event.created_at)} text-white truncate ${
+                          event.status === 'pending' ? 'border border-yellow-400' : ''
+                        }`}
+                        title={`${event.title} - $${event.amount.toLocaleString('es-AR')} - ${
+                          event.status === 'confirmed' 
+                            ? 'Confirmada' 
+                            : isRecentPending 
+                              ? 'Pendiente (expira pronto)' 
+                              : 'Pendiente de pago'
+                        }`}
+                      >
+                        {event.guest_name}
+                        {isRecentPending && <span className="ml-1">⏰</span>}
+                      </div>
+                    )
+                  })}
                   {dayEvents.length > 2 && (
                     <div className="text-xs text-neutral-400">
                       +{dayEvents.length - 2} más
@@ -271,17 +293,21 @@ export default function BookingCalendar({ propertyId, onEventClick }: BookingCal
 
       {/* Leyenda */}
       <div className="p-6 border-t border-neutral-800">
-        <div className="flex items-center gap-6 text-sm">
+        <div className="flex flex-wrap items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-green-600 rounded"></div>
-            <span className="text-neutral-300">Confirmada (Pagada)</span>
+            <span className="text-neutral-300">Confirmada</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-orange-600 rounded animate-pulse"></div>
+            <span className="text-neutral-300">Pendiente reciente ⏰</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-yellow-600 rounded border border-yellow-400"></div>
-            <span className="text-neutral-300">Pendiente de pago</span>
+            <span className="text-neutral-300">Pendiente (expira pronto)</span>
           </div>
-          <div className="text-xs text-neutral-500 ml-4">
-            * Solo las reservas pagadas bloquean disponibilidad
+          <div className="text-xs text-neutral-500">
+            * Solo las confirmadas bloquean disponibilidad permanentemente
           </div>
         </div>
       </div>

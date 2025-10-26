@@ -31,7 +31,16 @@ export async function POST(request: NextRequest) {
     const isAvailable = await BookingService.checkAvailability(property_id, start_date, end_date)
     if (!isAvailable) {
       return NextResponse.json(
-        { error: 'La propiedad no está disponible en las fechas seleccionadas' },
+        { error: 'La propiedad no está disponible en las fechas seleccionadas (reserva confirmada)' },
+        { status: 409 }
+      )
+    }
+
+    // También verificar si hay reservas pendientes recientes (menos de 30 min)
+    const hasRecentPending = await BookingService.checkRecentPendingBookings(property_id, start_date, end_date)
+    if (hasRecentPending) {
+      return NextResponse.json(
+        { error: 'Hay una reserva pendiente de pago en estas fechas. Intenta nuevamente en unos minutos.' },
         { status: 409 }
       )
     }

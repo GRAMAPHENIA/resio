@@ -9,6 +9,7 @@ import { CalendarEvent } from '@/services/calendar.service'
 
 export default function MisReservasPage() {
   const [email, setEmail] = useState('')
+  const [bookingCode, setBookingCode] = useState('')
   const [bookings, setBookings] = useState<BookingWithProperty[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -25,15 +26,26 @@ export default function MisReservasPage() {
       return
     }
 
+    if (!bookingCode.trim()) {
+      setError('Ingresa el código de reserva')
+      return
+    }
+
+    if (bookingCode.trim().length !== 8) {
+      setError('El código de reserva debe tener 8 caracteres')
+      return
+    }
+
     setLoading(true)
     setError('')
     
     try {
-      const userBookings = await BookingService.getBookingsByUser(email.trim())
+      // Verificar que existe una reserva con ese email y código
+      const userBookings = await BookingService.getBookingsByUserAndCode(email.trim(), bookingCode.trim())
       setBookings(userBookings)
       setSearched(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al buscar reservas')
+      setError(err instanceof Error ? err.message : 'Email o código de reserva incorrectos')
     } finally {
       setLoading(false)
     }
@@ -105,26 +117,66 @@ export default function MisReservasPage() {
 
         {/* Formulario de búsqueda */}
         <div className="bg-neutral-900 border border-neutral-800 p-6 mb-8">
-          <form onSubmit={searchBookings} className="flex gap-4">
-            <div className="flex-1">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Ingresa el email usado para reservar"
-                className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 text-foreground focus:outline-none focus:border-neutral-500"
-                required
-              />
+          <div className="mb-4">
+            <h3 className="text-foreground font-semibold mb-2">Buscar mis reservas</h3>
+            <p className="text-neutral-400 text-sm">
+              Por seguridad, necesitas tanto tu email como el código de una de tus reservas
+            </p>
+          </div>
+          
+          <form onSubmit={searchBookings} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                  Email usado para reservar
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 text-foreground focus:outline-none focus:border-neutral-500"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                  Código de reserva
+                </label>
+                <input
+                  type="text"
+                  value={bookingCode}
+                  onChange={(e) => setBookingCode(e.target.value.toUpperCase())}
+                  placeholder="ABC12345"
+                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 text-foreground focus:outline-none focus:border-neutral-500 font-mono"
+                  maxLength={8}
+                  required
+                />
+                <p className="text-xs text-neutral-500 mt-1">
+                  Código de 8 caracteres que aparece en tu email de confirmación
+                </p>
+              </div>
             </div>
+            
             <button
               type="submit"
               disabled={loading}
               className="flex items-center gap-2 bg-foreground text-background px-6 py-3 font-medium hover:bg-neutral-200 disabled:bg-neutral-600 disabled:cursor-not-allowed transition-colors"
             >
               <Search className="w-4 h-4" />
-              {loading ? 'Buscando...' : 'Buscar'}
+              {loading ? 'Verificando...' : 'Buscar reservas'}
             </button>
           </form>
+          
+          <div className="mt-4 p-4 bg-blue-900/20 border border-blue-800">
+            <h4 className="text-blue-300 font-medium mb-2">¿Dónde encuentro mi código de reserva?</h4>
+            <ul className="text-blue-200 text-sm space-y-1">
+              <li>• En el email de confirmación que recibiste</li>
+              <li>• En la página de éxito después de pagar</li>
+              <li>• En cualquier comunicación sobre tu reserva</li>
+            </ul>
+          </div>
         </div>
 
         {error && (
@@ -369,26 +421,38 @@ export default function MisReservasPage() {
 
         {/* Información adicional */}
         {!searched && (
-          <div className="bg-blue-900/20 border border-blue-800 p-6 mb-8">
-            <h3 className="text-blue-300 font-semibold mb-3">💡 ¿Sabías que puedes crear una cuenta?</h3>
-            <p className="text-blue-200 mb-4">
-              Con una cuenta de Resio puedes gestionar todas tus reservas de forma más fácil, recibir notificaciones automáticas y acceder a funciones exclusivas.
-            </p>
-            <div className="flex flex-col md:flex-row gap-3">
-              <Link
-                href="/registro"
-                className="inline-flex items-center justify-center bg-blue-600 text-white px-6 py-3 hover:bg-blue-700 transition-colors"
-              >
-                Crear cuenta gratis
-              </Link>
-              <Link
-                href="/ingresar"
-                className="inline-flex items-center justify-center border border-blue-600 text-blue-300 px-6 py-3 hover:bg-blue-900/30 transition-colors"
-              >
-                Ya tengo cuenta
-              </Link>
+          <>
+            <div className="bg-green-900/20 border border-green-800 p-6 mb-6">
+              <h3 className="text-green-300 font-semibold mb-3">🔒 Tu privacidad es importante</h3>
+              <p className="text-green-200 mb-2">
+                Para proteger tus datos, ahora necesitas tanto tu email como el código de reserva para acceder a tu información.
+              </p>
+              <p className="text-green-200 text-sm">
+                Esto evita que otras personas puedan ver tus reservas solo conociendo tu email.
+              </p>
             </div>
-          </div>
+            
+            <div className="bg-blue-900/20 border border-blue-800 p-6 mb-8">
+              <h3 className="text-blue-300 font-semibold mb-3">💡 ¿Sabías que puedes crear una cuenta?</h3>
+              <p className="text-blue-200 mb-4">
+                Con una cuenta de Resio puedes gestionar todas tus reservas de forma más fácil, recibir notificaciones automáticas y acceder sin códigos.
+              </p>
+              <div className="flex flex-col md:flex-row gap-3">
+                <Link
+                  href="/registro"
+                  className="inline-flex items-center justify-center bg-blue-600 text-white px-6 py-3 hover:bg-blue-700 transition-colors"
+                >
+                  Crear cuenta gratis
+                </Link>
+                <Link
+                  href="/ingresar"
+                  className="inline-flex items-center justify-center border border-blue-600 text-blue-300 px-6 py-3 hover:bg-blue-900/30 transition-colors"
+                >
+                  Ya tengo cuenta
+                </Link>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Ayuda */}

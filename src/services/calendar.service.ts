@@ -11,6 +11,7 @@ export interface CalendarEvent {
   guest_email: string
   status: 'confirmed' | 'pending' | 'cancelled'
   amount: number
+  created_at: string
 }
 
 export interface AvailabilityCheck {
@@ -36,6 +37,7 @@ export class CalendarService {
         user_email,
         amount,
         status,
+        created_at,
         property:properties(name)
       `)
       .eq('property_id', propertyId)
@@ -65,7 +67,8 @@ export class CalendarService {
       guest_name: booking.user_name,
       guest_email: booking.user_email,
       status: booking.status === 'paid' ? 'confirmed' : booking.status as 'pending' | 'cancelled',
-      amount: booking.amount
+      amount: booking.amount,
+      created_at: booking.created_at
     }))
   }
 
@@ -83,6 +86,7 @@ export class CalendarService {
         user_email,
         amount,
         status,
+        created_at,
         property_id,
         property:properties(name)
       `)
@@ -112,7 +116,8 @@ export class CalendarService {
       guest_name: booking.user_name,
       guest_email: booking.user_email,
       status: booking.status === 'paid' ? 'confirmed' : booking.status as 'pending' | 'cancelled',
-      amount: booking.amount
+      amount: booking.amount,
+      created_at: booking.created_at
     }))
   }
 

@@ -6,9 +6,9 @@ import { BookingService } from '@/services/booking.service'
 async function SuccessContent({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const paymentId = searchParams.payment_id as string
   const externalReference = searchParams.external_reference as string
-  
+
   let booking = null
-  
+
   if (externalReference) {
     try {
       booking = await BookingService.getBookingById(externalReference)
@@ -22,11 +22,11 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
       <div className="max-w-lg w-full bg-neutral-900 border border-neutral-800 p-8">
         <div className="text-center mb-6">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          
+
           <h1 className="text-2xl font-bold text-foreground mb-2">
             ¡Pago exitoso!
           </h1>
-          
+
           <p className="text-neutral-300">
             Tu reserva ha sido confirmada exitosamente
           </p>
@@ -35,7 +35,7 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
         {booking && (
           <div className="bg-neutral-800 border border-neutral-700 p-6 mb-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Detalles de tu reserva</h2>
-            
+
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <MapPin className="w-5 h-5 text-neutral-400" />
@@ -44,7 +44,7 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
                   <p className="text-sm text-neutral-400">{booking.property.location}</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-neutral-400" />
                 <div>
@@ -56,7 +56,7 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-neutral-400" />
                 <div>
@@ -82,7 +82,7 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
                 <p className="text-blue-300">Tu reserva está confirmada y el pago fue procesado exitosamente</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">2</div>
               <div>
@@ -90,7 +90,7 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
                 <p className="text-blue-300">Recibirás un email con todos los detalles en los próximos minutos</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">3</div>
               <div>
@@ -108,23 +108,23 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
               <Home className="w-5 h-5" />
               Información importante
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-neutral-400 mb-1">Check-in</p>
                 <p className="text-foreground">15:00 hs</p>
               </div>
-              
+
               <div>
                 <p className="text-neutral-400 mb-1">Check-out</p>
                 <p className="text-foreground">11:00 hs</p>
               </div>
-              
+
               <div>
                 <p className="text-neutral-400 mb-1">Código de reserva</p>
                 <p className="text-foreground font-mono">{booking.id.slice(0, 8).toUpperCase()}</p>
               </div>
-              
+
               <div>
                 <p className="text-neutral-400 mb-1">Estado</p>
                 <span className="bg-green-900 text-green-300 px-2 py-1 rounded text-xs">
@@ -151,30 +151,30 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
 
         <div className="bg-green-900/20 border border-green-800 p-4 mb-6">
           <p className="text-green-300 text-sm">
-            ✓ Tu reserva está confirmada y agendada<br/>
-            ✓ El propietario ha sido notificado automáticamente<br/>
+            ✓ Tu reserva está confirmada y agendada<br />
+            ✓ El propietario ha sido notificado automáticamente<br />
             ✓ Puedes ver tu reserva en &quot;Mis Reservas&quot; en cualquier momento
           </p>
         </div>
-        
+
         <div className="space-y-3">
           {booking && (
             <Link
               href={`/reservas/detalle/${booking.id}`}
-              className="block w-full bg-blue-600 text-white py-3 px-4 hover:bg-blue-700 transition-colors font-medium text-center flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 text-white py-3 px-4 hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2"
             >
               <Download className="w-4 h-4" />
               Ver detalles completos
             </Link>
           )}
-          
+
           <Link
             href="/tablero/reservas"
             className="block w-full bg-foreground text-background py-3 px-4 hover:bg-neutral-200 transition-colors font-medium text-center"
           >
             Ver todas mis reservas
           </Link>
-          
+
           <Link
             href="/"
             className="block w-full border border-neutral-700 text-neutral-300 py-3 px-4 hover:bg-neutral-800 transition-colors text-center"

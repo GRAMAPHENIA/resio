@@ -65,7 +65,11 @@ export class EmailService {
               
               <p><strong>Alojamiento:</strong> ${booking.property.name}</p>
               <p><strong>Ubicación:</strong> ${booking.property.location}</p>
-              <p><strong>Código de Reserva:</strong> ${booking.id.slice(0, 8).toUpperCase()}</p>
+              <div style="background: #1f2937; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                <p style="margin: 0; color: #f3f4f6;"><strong>📋 CÓDIGO DE RESERVA:</strong></p>
+                <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: bold; color: #10b981; font-family: monospace;">${booking.id.slice(0, 8).toUpperCase()}</p>
+                <p style="margin: 5px 0 0 0; font-size: 12px; color: #9ca3af;">Guarda este código para consultar tu reserva</p>
+              </div>
               
               <hr>
               
@@ -129,7 +133,7 @@ Tu reserva ha sido confirmada y el pago procesado exitosamente.
 DETALLES DE TU RESERVA:
 - Alojamiento: ${booking.property.name}
 - Ubicación: ${booking.property.location}
-- Código: ${booking.id.slice(0, 8).toUpperCase()}
+- CÓDIGO DE RESERVA: ${booking.id.slice(0, 8).toUpperCase()} (GUÁRDALO)
 - Check-in: ${checkInDate} desde 15:00hs
 - Check-out: ${checkOutDate} hasta 11:00hs
 - Duración: ${nights} ${nights === 1 ? 'noche' : 'noches'}
