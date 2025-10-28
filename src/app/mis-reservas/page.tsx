@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BookingService, BookingWithProperty } from '@/services/booking.service'
-import { Calendar, MapPin, CreditCard, Search, Eye, Download, Filter, CalendarDays } from 'lucide-react'
+import { Calendar, MapPin, CreditCard, Search, Eye, Download, Filter, CalendarDays, User, LogIn } from 'lucide-react'
 import Link from 'next/link'
 import BookingCalendar from '@/components/calendar/BookingCalendar'
 import { CalendarEvent } from '@/services/calendar.service'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function MisReservasPage() {
+  const { user, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [bookingCode, setBookingCode] = useState('')
   const [bookings, setBookings] = useState<BookingWithProperty[]>([])
@@ -17,6 +19,30 @@ export default function MisReservasPage() {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'pending' | 'cancelled'>('all')
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+
+  // Cargar reservas automáticamente para usuarios autenticados
+  useEffect(() => {
+    if (user && user.email) {
+      loadUserBookings()
+    }
+  }, [user])
+
+  const loadUserBookings = async () => {
+    if (!user?.email) return
+    
+    setLoading(true)
+    setError('')
+    
+    try {
+      const userBookings = await BookingService.getBookingsByEmail(user.email, user.id)
+      setBookings(userBookings)
+      setSearched(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar tus reservas')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const searchBookings = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -77,6 +103,17 @@ export default function MisReservasPage() {
     }
   }
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
+          <p className="mt-2 text-neutral-400">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -84,7 +121,14 @@ export default function MisReservasPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Mis Reservas</h1>
-              <p className="text-neutral-400 mt-2">Consulta tus reservas ingresando tu email</p>
+              {user ? (
+                <div className="flex items-center gap-2 mt-2">
+                  <User className="w-4 h-4 text-green-400" />
+                  <p className="text-green-400">Bienvenido, {user.user_metadata?.full_name || user.email}</p>
+                </div>
+              ) : (
+                <p className="text-neutral-400 mt-2">Consulta tus reservas ingresando tu email</p>
+              )}
             </div>
             
             {searched && bookings.length > 0 && (
@@ -115,14 +159,47 @@ export default function MisReservasPage() {
           </div>
         </div>
 
-        {/* Formulario de búsqueda */}
-        <div className="bg-neutral-900 border border-neutral-800 p-6 mb-8">
-          <div className="mb-4">
-            <h3 className="text-foreground font-semibold mb-2">Buscar mis reservas</h3>
-            <p className="text-neutral-400 text-sm">
-              Por seguridad, necesitas tanto tu email como el código de una de tus reservas
-            </p>
-          </div>
+        {/* Mostrar diferentes contenidos según el estado de autenticación */}
+        {user ? (
+          // Usuario autenticado - mostrar sus reservas automáticamente
+          loading && !searched ? (
+            <div className="bg-neutral-900 border border-neutral-800 p-6 mb-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-4"></div>
+              <p className="text-neutral-400">Cargando tus reservas...</p>
+            </div>
+          ) : null
+        ) : (
+          // Usuario no autenticado - mostrar formulario de búsqueda
+          <>
+            <div className="bg-blue-900/20 border border-blue-800 p-6 mb-6">
+              <h3 className="text-blue-300 font-semibold mb-3">🚀 ¡Accede más fácil con tu cuenta!</h3>
+              <p className="text-blue-200 mb-4">
+                Si tienes una cuenta de Resio, puedes ver todas tus reservas automáticamente sin necesidad de códigos.
+              </p>
+              <div className="flex flex-col md:flex-row gap-3">
+                <Link
+                  href="/ingresar"
+                  className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 hover:bg-blue-700 transition-colors"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Iniciar sesión
+                </Link>
+                <Link
+                  href="/registro"
+                  className="inline-flex items-center justify-center border border-blue-600 text-blue-300 px-6 py-3 hover:bg-blue-900/30 transition-colors"
+                >
+                  Crear cuenta gratis
+                </Link>
+              </div>
+            </div>
+
+            <div className="bg-neutral-900 border border-neutral-800 p-6 mb-8">
+              <div className="mb-4">
+                <h3 className="text-foreground font-semibold mb-2">Buscar mis reservas</h3>
+                <p className="text-neutral-400 text-sm">
+                  Por seguridad, necesitas tanto tu email como el código de una de tus reservas
+                </p>
+              </div>
           
           <form onSubmit={searchBookings} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -169,15 +246,17 @@ export default function MisReservasPage() {
             </button>
           </form>
           
-          <div className="mt-4 p-4 bg-blue-900/20 border border-blue-800">
-            <h4 className="text-blue-300 font-medium mb-2">¿Dónde encuentro mi código de reserva?</h4>
-            <ul className="text-blue-200 text-sm space-y-1">
-              <li>• En el email de confirmación que recibiste</li>
-              <li>• En la página de éxito después de pagar</li>
-              <li>• En cualquier comunicación sobre tu reserva</li>
-            </ul>
-          </div>
-        </div>
+              <div className="mt-4 p-4 bg-blue-900/20 border border-blue-800">
+                <h4 className="text-blue-300 font-medium mb-2">¿Dónde encuentro mi código de reserva?</h4>
+                <ul className="text-blue-200 text-sm space-y-1">
+                  <li>• En el email de confirmación que recibiste</li>
+                  <li>• En la página de éxito después de pagar</li>
+                  <li>• En cualquier comunicación sobre tu reserva</li>
+                </ul>
+              </div>
+            </div>
+          </>
+        )}
 
         {error && (
           <div className="bg-red-900/20 border border-red-800 text-red-400 px-4 py-3 mb-6">
@@ -419,8 +498,8 @@ export default function MisReservasPage() {
           </>
         )}
 
-        {/* Información adicional */}
-        {!searched && (
+        {/* Información adicional para usuarios no autenticados */}
+        {!user && !searched && (
           <>
             <div className="bg-green-900/20 border border-green-800 p-6 mb-6">
               <h3 className="text-green-300 font-semibold mb-3">🔒 Tu privacidad es importante</h3>
@@ -431,28 +510,23 @@ export default function MisReservasPage() {
                 Esto evita que otras personas puedan ver tus reservas solo conociendo tu email.
               </p>
             </div>
-            
-            <div className="bg-blue-900/20 border border-blue-800 p-6 mb-8">
-              <h3 className="text-blue-300 font-semibold mb-3">💡 ¿Sabías que puedes crear una cuenta?</h3>
-              <p className="text-blue-200 mb-4">
-                Con una cuenta de Resio puedes gestionar todas tus reservas de forma más fácil, recibir notificaciones automáticas y acceder sin códigos.
-              </p>
-              <div className="flex flex-col md:flex-row gap-3">
-                <Link
-                  href="/registro"
-                  className="inline-flex items-center justify-center bg-blue-600 text-white px-6 py-3 hover:bg-blue-700 transition-colors"
-                >
-                  Crear cuenta gratis
-                </Link>
-                <Link
-                  href="/ingresar"
-                  className="inline-flex items-center justify-center border border-blue-600 text-blue-300 px-6 py-3 hover:bg-blue-900/30 transition-colors"
-                >
-                  Ya tengo cuenta
-                </Link>
-              </div>
-            </div>
           </>
+        )}
+
+        {/* Mensaje de bienvenida para usuarios autenticados sin reservas */}
+        {user && searched && bookings.length === 0 && (
+          <div className="bg-blue-900/20 border border-blue-800 p-6 mb-8">
+            <h3 className="text-blue-300 font-semibold mb-3">👋 ¡Bienvenido a Resio!</h3>
+            <p className="text-blue-200 mb-4">
+              Aún no tienes reservas en tu cuenta. Cuando hagas tu primera reserva, aparecerá aquí automáticamente.
+            </p>
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center bg-blue-600 text-white px-6 py-3 hover:bg-blue-700 transition-colors"
+            >
+              Explorar alojamientos
+            </Link>
+          </div>
         )}
 
         {/* Ayuda */}

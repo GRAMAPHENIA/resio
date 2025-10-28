@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
-import { Calendar, Heart, LogOut, ChevronDown, Home, EllipsisVertical } from 'lucide-react'
+import { Calendar, Heart, LogOut, ChevronDown, Home, EllipsisVertical, LogIn, UserPlus } from 'lucide-react'
 import Image from 'next/image'
 
 interface SerializedUser {
@@ -98,6 +98,29 @@ export default function Navbar({ user }: NavbarProps) {
                       <Calendar className="w-4 h-4" />
                       Mis Reservas
                     </Link>
+
+                    {/* Opciones de autenticación para móvil cuando no hay usuario */}
+                    {!user && (
+                      <>
+                        <div className="border-t border-neutral-800 my-2"></div>
+                        <Link
+                          href="/ingresar"
+                          className="flex items-center gap-3 px-4 py-2 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <LogIn className="w-4 h-4" />
+                          Iniciar sesión
+                        </Link>
+                        <Link
+                          href="/registro"
+                          className="flex items-center gap-3 px-4 py-2 text-blue-400 hover:text-blue-300 hover:bg-neutral-800 transition-colors font-medium"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <UserPlus className="w-4 h-4" />
+                          Registrarse
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -107,7 +130,7 @@ export default function Navbar({ user }: NavbarProps) {
               <>
                 <Link
                   href="/propiedades"
-                  className="flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
+                  className="hidden md:flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
                 >
                   <Home className="w-4 h-4" />
                   Administrar
@@ -135,6 +158,9 @@ export default function Navbar({ user }: NavbarProps) {
                         </span>
                       </div>
                     )}
+                    <span className="hidden md:inline text-sm max-w-32 truncate">
+                      {user.user_metadata?.full_name || user.email}
+                    </span>
                     <ChevronDown className="w-4 h-4" />
                   </button>
                   {isMenuOpen && (
@@ -144,7 +170,7 @@ export default function Navbar({ user }: NavbarProps) {
                           {user.user_metadata?.full_name || user.email}
                         </div>
                         <Link
-                          href="/tablero/reservas"
+                          href="/mis-reservas"
                           className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
@@ -158,6 +184,14 @@ export default function Navbar({ user }: NavbarProps) {
                         >
                           <Heart className="w-4 h-4" />
                           Favoritos
+                        </Link>
+                        <Link
+                          href="/propiedades"
+                          className="md:hidden flex items-center gap-2 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Home className="w-4 h-4" />
+                          Administrar
                         </Link>
                         <button
                           onClick={() => {
@@ -174,7 +208,26 @@ export default function Navbar({ user }: NavbarProps) {
                   )}
                 </div>
               </>
-            ) : null}
+            ) : (
+              // Botones para usuarios no autenticados
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/ingresar"
+                  className="hidden md:flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors px-3 py-2"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Iniciar sesión
+                </Link>
+                <Link
+                  href="/registro"
+                  className="flex items-center gap-2 bg-foreground text-background px-4 py-2 hover:bg-neutral-200 transition-colors text-sm font-medium"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Registrarse</span>
+                  <span className="sm:hidden">Registro</span>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 

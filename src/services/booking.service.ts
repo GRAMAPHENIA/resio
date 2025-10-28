@@ -9,6 +9,7 @@ export interface CreateBookingData {
   start_date: string
   end_date: string
   amount: number
+  user_id?: string // ID del usuario autenticado (opcional)
 }
 
 export interface BookingWithProperty extends Booking {
@@ -23,12 +24,19 @@ export class BookingService {
   private static supabase = createClient()
 
   static async createBooking(data: CreateBookingData): Promise<Booking> {
+    const bookingData: any = {
+      ...data,
+      status: 'pending'
+    }
+
+    // Si hay user_id, incluirlo en la reserva
+    if (data.user_id) {
+      bookingData.user_id = data.user_id
+    }
+
     const { data: booking, error } = await this.supabase
       .from('bookings')
-      .insert([{
-        ...data,
-        status: 'pending'
-      }])
+      .insert([bookingData])
       .select()
       .single()
 
@@ -61,6 +69,24 @@ export class BookingService {
         property:properties(name, location, price_per_night)
       `)
       .eq('user_email', userEmail)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new Error(`Error al obtener las reservas: ${error.message}`)
+    }
+
+    return data as BookingWithProperty[]
+  }
+
+  // Método para obtener reservas por user_id (para usuarios autenticados)
+  static async getBookingsByUserId(userId: string): Promise<BookingWithProperty[]> {
+    const { data, error } = await this.supabase
+      .from('bookings')
+      .select(`
+        *,
+        property:properties(name, location, price_per_night)
+      `)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -228,5 +254,29 @@ export class BookingService {
     }
 
     return data as BookingWithProperty[]
+  }
+
+  // Alias para compatibilidad - ahora intenta por user_id primero, luego por email
+  static async getBookingsByEmail(userEmail: string, userId?: string): Promise<BookingWithProperty[]> {
+    if (userId) {
+      // Si tenemos user_id, obtener por ID y también por email para reservas anteriores
+      const [userIdBookings, emailBookings] = await Promise.all([
+        this.getBookingsByUserId(userId),
+        this.getBookingsByUser(userEmail)
+      ])
+      
+      // Combinar y deduplicar por ID
+      const allBookings = [...userIdBookings, ...emailBookings]
+      const uniqueBookings = allBookings.filter((booking, index, self) => 
+        index === self.findIndex(b => b.id === booking.id)
+      )
+      
+      // Ordenar por fecha de creación
+      return uniqueBookings.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+    }
+    
+    return this.getBookingsByUser(userEmail)
   }
 }

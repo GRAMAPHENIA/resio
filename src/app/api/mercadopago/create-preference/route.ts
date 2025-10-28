@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
       user_phone,
       start_date, 
       end_date, 
-      amount 
+      amount,
+      user_id // ID del usuario autenticado (opcional)
     } = body
 
     // Validar datos requeridos
@@ -50,9 +51,11 @@ export async function POST(request: NextRequest) {
       property_id,
       user_name,
       user_email,
+      user_phone,
       start_date,
       end_date,
-      amount
+      amount,
+      user_id // Incluir user_id si está disponible
     })
 
     // Calcular días de estadía
