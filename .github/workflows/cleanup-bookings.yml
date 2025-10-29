@@ -1,10 +1,7 @@
 name: Cleanup Expired Bookings
 
 on:
-  schedule:
-    # Ejecutar cada 15 minutos
-    - cron: '*/15 * * * *'
-  workflow_dispatch: # Permitir ejecución manual
+  workflow_dispatch: # Solo ejecución manual
 
 jobs:
   cleanup:
@@ -30,9 +27,11 @@ jobs:
         run: |
           # Ejecutar el endpoint de limpieza usando curl
           # Necesitamos las variables de entorno para Supabase
-          curl -X POST ${{ secrets.VERCEL_URL }}/api/cleanup-bookings \
-            -H "Authorization: Bearer ${{ secrets.CLEANUP_API_KEY }}" \
-            -H "Content-Type: application/json"
+          curl -X POST "https://resio.vercel.app/api/cleanup-bookings" \
+            -H "Authorization: Bearer $CLEANUP_API_KEY" \
+            -H "Content-Type: application/json" \
+            --fail
         env:
+          CLEANUP_API_KEY: "${{ secrets.CLEANUP_API_KEY }}"
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}

@@ -70,23 +70,15 @@ export default function Navbar({ user }: NavbarProps) {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <Link
-                  href="/propiedades"
-                  className="hidden md:flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors"
-                >
-                  <Home className="w-4 h-4" />
-                  Administrar
-                </Link>
-
                 <div className="relative">
                   <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                     className="flex items-center space-x-2 text-neutral-400 hover:text-foreground transition-colors"
                   >
-                    {user.user_metadata?.avatar_url ? (
+                    {(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (
                       <div className="w-8 h-8 bg-neutral-700 rounded-full relative overflow-hidden">
                         <Image
-                          src={user.user_metadata.avatar_url}
+                          src={user.user_metadata.avatar_url || user.user_metadata.picture as string}
                           alt="Avatar"
                           fill
                           className="object-cover"
@@ -96,7 +88,7 @@ export default function Navbar({ user }: NavbarProps) {
                     ) : (
                       <div className="w-8 h-8 bg-neutral-700 rounded-full flex items-center justify-center">
                         <span className="text-foreground text-sm font-medium">
-                          {(user.user_metadata?.full_name || user.email || '').charAt(0).toUpperCase()}
+                          {(user.user_metadata?.full_name || user.user_metadata?.name || user.email || '').toString().charAt(0).toUpperCase()}
                         </span>
                       </div>
                     )}
@@ -126,14 +118,6 @@ export default function Navbar({ user }: NavbarProps) {
                         >
                           <Heart className="w-4 h-4" />
                           Favoritos
-                        </Link>
-                        <Link
-                          href="/propiedades"
-                          className="md:hidden flex items-center gap-2 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Home className="w-4 h-4" />
-                          Administrar
                         </Link>
                         <button
                           onClick={() => {
@@ -200,6 +184,18 @@ export default function Navbar({ user }: NavbarProps) {
                           <Calendar className="w-4 h-4" />
                           Mis Reservas
                         </Link>
+
+                        <div className="border-t border-neutral-800 my-2"></div>
+                        <button
+                          onClick={() => {
+                            handleLogout()
+                            setIsMobileMenuOpen(false)
+                          }}
+                          className="flex items-center gap-3 w-full text-left px-4 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-foreground transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Cerrar sesión
+                        </button>
 
                       </div>
                     </div>
