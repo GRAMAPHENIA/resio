@@ -68,64 +68,6 @@ export default function Navbar({ user }: NavbarProps) {
           </div>
 
           <div className="flex items-center space-x-4">
-            {/* Menu Button */}
-            <div className="relative" ref={menuRef}>
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="flex items-center justify-center w-8 h-8 bg-neutral-900 border border-neutral-800 text-foreground hover:opacity-70 transition-opacity"
-              >
-                <EllipsisVertical className="w-5 h-5" />
-              </button>
-
-              {/* Dropdown Menu */}
-              {isMobileMenuOpen && (
-                <div className="absolute right-0 mt-4 w-50 bg-neutral-900 border border-neutral-800 shadow-lg z-50">
-                  <div className="py-4">
-                    <Link
-                      href="/favoritos"
-                      className="flex items-center gap-3 px-4 py-2 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Heart className="w-4 h-4" />
-                      Favoritos
-                    </Link>
-
-                    <Link
-                      href="/mis-reservas"
-                      className="flex items-center gap-3 px-4 py-2 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Calendar className="w-4 h-4" />
-                      Mis Reservas
-                    </Link>
-
-                    {/* Opciones de autenticación para móvil cuando no hay usuario */}
-                    {!user && (
-                      <>
-                        <div className="border-t border-neutral-800 my-2"></div>
-                        <Link
-                          href="/ingresar"
-                          className="flex items-center gap-3 px-4 py-2 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          <LogIn className="w-4 h-4" />
-                          Iniciar sesión
-                        </Link>
-                        <Link
-                          href="/registro"
-                          className="flex items-center gap-3 px-4 py-2 text-blue-400 hover:text-blue-300 hover:bg-neutral-800 transition-colors font-medium"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          <UserPlus className="w-4 h-4" />
-                          Registrarse
-                        </Link>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
             {user ? (
               <>
                 <Link
@@ -210,23 +152,60 @@ export default function Navbar({ user }: NavbarProps) {
               </>
             ) : (
               // Botones para usuarios no autenticados
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/ingresar"
-                  className="hidden md:flex items-center gap-2 text-neutral-400 hover:text-foreground transition-colors px-3 py-2"
-                >
-                  <LogIn className="w-4 h-4" />
-                  Iniciar sesión
-                </Link>
-                <Link
-                  href="/registro"
-                  className="flex items-center gap-2 bg-foreground text-background px-4 py-2 hover:bg-neutral-200 transition-colors text-sm font-medium"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Registrarse</span>
-                  <span className="sm:hidden">Registro</span>
-                </Link>
-              </div>
+              <>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/ingresar"
+                    className="flex items-center justify-center w-8 h-8 bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-foreground transition-colors"
+                    title="Iniciar sesión"
+                  >
+                    <LogIn className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    href="/registro"
+                    className="flex items-center justify-center w-8 h-8 bg-foreground text-background hover:bg-neutral-200 transition-colors"
+                    title="Registrarse"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                  </Link>
+                </div>
+
+                {/* Menu Button - Después de los botones de autenticación */}
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="flex items-center justify-center w-8 h-8 bg-neutral-900 border border-neutral-800 text-foreground hover:opacity-70 transition-opacity"
+                  >
+                    <EllipsisVertical className="w-5 h-5" />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {isMobileMenuOpen && (
+                    <div className="absolute right-0 mt-4 w-50 bg-neutral-900 border border-neutral-800 shadow-lg z-50">
+                      <div className="py-4">
+                        <Link
+                          href="/favoritos"
+                          className="flex items-center gap-3 px-4 py-2 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <Heart className="w-4 h-4" />
+                          Favoritos
+                        </Link>
+
+                        <Link
+                          href="/mis-reservas"
+                          className="flex items-center gap-3 px-4 py-2 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <Calendar className="w-4 h-4" />
+                          Mis Reservas
+                        </Link>
+
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>
