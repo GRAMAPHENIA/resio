@@ -79,21 +79,12 @@ export class BookingService {
   }
 
   // Método para obtener reservas por user_id (para usuarios autenticados)
+  // NOTA: La tabla bookings no tiene columna user_id, usa user_email
   static async getBookingsByUserId(userId: string): Promise<BookingWithProperty[]> {
-    const { data, error } = await this.supabase
-      .from('bookings')
-      .select(`
-        *,
-        property:properties(name, location, price_per_night)
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      throw new Error(`Error al obtener las reservas: ${error.message}`)
-    }
-
-    return data as BookingWithProperty[]
+    // Como no hay user_id en la tabla, devolver array vacío por ahora
+    // En el futuro, si se migra la tabla para incluir user_id, se puede implementar
+    console.warn('getBookingsByUserId called but bookings table does not have user_id column')
+    return []
   }
 
   static async getBookingById(id: string): Promise<BookingWithProperty | null> {

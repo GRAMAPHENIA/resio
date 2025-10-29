@@ -83,6 +83,14 @@ export default function Navbar({ user }: NavbarProps) {
                           fill
                           className="object-cover"
                           sizes="32px"
+                          onError={(e) => {
+                            // Fallback to initials if image fails to load
+                            const target = e.target as HTMLElement;
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.innerHTML = `<span class="text-foreground text-sm font-medium">${(user.user_metadata?.full_name || user.user_metadata?.name || user.email || '').toString().charAt(0).toUpperCase()}</span>`;
+                            }
+                          }}
                         />
                       </div>
                     ) : (

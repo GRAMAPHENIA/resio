@@ -26,7 +26,7 @@ export default function LoginPage() {
 
     try {
       await authService.signInWithEmail(formData.email, formData.password)
-      router.push('/mis-reservas')
+      router.push('/')
       router.refresh()
     } catch (error: unknown) {
       const err = error as Error
@@ -39,9 +39,9 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true)
     setError('')
-    
+
     try {
-      await authService.signInWithGoogle('/mis-reservas')
+      await authService.signInWithGoogle('/')
     } catch {
       setError('Error al iniciar sesión con Google')
     } finally {
