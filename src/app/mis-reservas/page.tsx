@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { BookingService, BookingWithProperty } from '@/services/booking.service'
 import { Calendar, MapPin, CreditCard, Search, Eye, Download, Filter, CalendarDays, User, LogIn } from 'lucide-react'
 import Link from 'next/link'
@@ -20,19 +20,12 @@ export default function MisReservasPage() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'pending' | 'cancelled'>('all')
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
 
-  // Cargar reservas automáticamente para usuarios autenticados
-  useEffect(() => {
-    if (user && user.email) {
-      loadUserBookings()
-    }
-  }, [user])
-
-  const loadUserBookings = async () => {
+  const loadUserBookings = useCallback(async () => {
     if (!user?.email) return
-    
+
     setLoading(true)
     setError('')
-    
+
     try {
       const userBookings = await BookingService.getBookingsByEmail(user.email, user.id)
       setBookings(userBookings)
@@ -42,7 +35,14 @@ export default function MisReservasPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  // Cargar reservas automáticamente para usuarios autenticados
+  useEffect(() => {
+    if (user && user.email) {
+      loadUserBookings()
+    }
+  }, [user, loadUserBookings])
 
   const searchBookings = async (e: React.FormEvent) => {
     e.preventDefault()

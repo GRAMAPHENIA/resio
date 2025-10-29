@@ -26,6 +26,7 @@ export interface Booking {
   status: 'pending' | 'paid' | 'cancelled'
   payment_id?: string
   amount: number
+  user_id?: string
   created_at: string
   updated_at?: string
 }

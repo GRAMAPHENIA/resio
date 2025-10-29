@@ -24,7 +24,7 @@ export class BookingService {
   private static supabase = createClient()
 
   static async createBooking(data: CreateBookingData): Promise<Booking> {
-    const bookingData: any = {
+    const bookingData: Omit<Booking, 'id' | 'created_at'> = {
       ...data,
       status: 'pending'
     }

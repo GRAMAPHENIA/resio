@@ -2,7 +2,7 @@
 
 :root {
   --background: #121213;
-  --foreground: oklch(84.167% 0.12175 68.698);
+  --foreground: #ffbc6f;
 
   /* Paleta de colores consistente */
   --primary: oklch(84.167% 0.12175 68.698);

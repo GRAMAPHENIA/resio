@@ -1,14 +1,25 @@
 import { NextResponse } from 'next/server'
 import { BookingService } from '@/services/booking.service'
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    // Verificar API key para seguridad (opcional pero recomendado)
+    const authHeader = request.headers.get('authorization')
+    const apiKey = process.env.CLEANUP_API_KEY
+
+    if (apiKey && authHeader !== `Bearer ${apiKey}`) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     // Limpiar reservas pendientes vencidas
     await BookingService.cleanupExpiredPendingBookings()
-    
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Reservas pendientes vencidas limpiadas' 
+
+    return NextResponse.json({
+      success: true,
+      message: 'Reservas pendientes vencidas limpiadas'
     })
   } catch (error) {
     console.error('Error cleaning up bookings:', error)

@@ -1,0 +1,38 @@
+name: Cleanup Expired Bookings
+
+on:
+  schedule:
+    # Ejecutar cada 15 minutos
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Permitir ejecución manual
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Run cleanup script
+        run: |
+          # Ejecutar el endpoint de limpieza usando curl
+          # Necesitamos las variables de entorno para Supabase
+          curl -X POST ${{ secrets.VERCEL_URL }}/api/cleanup-bookings \
+            -H "Authorization: Bearer ${{ secrets.CLEANUP_API_KEY }}" \
+            -H "Content-Type: application/json"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
