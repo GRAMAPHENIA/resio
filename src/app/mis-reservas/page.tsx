@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { BookingService, BookingWithProperty } from '@/services/booking.service'
-import { Calendar, MapPin, CreditCard, Search, Eye, Download, Filter, CalendarDays, User, LogIn } from 'lucide-react'
+import { Calendar, MapPin, CreditCard, Search, Eye, Download, Filter, CalendarDays, User, LogIn, Rocket, Lock } from 'lucide-react'
 import Link from 'next/link'
 import BookingCalendar from '@/components/calendar/BookingCalendar'
 import { CalendarEvent } from '@/services/calendar.service'
@@ -80,11 +80,11 @@ export default function MisReservasPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
-        return 'bg-green-900 text-green-300'
+        return 'bg-success-dark text-success'
       case 'pending':
-        return 'bg-yellow-900 text-yellow-300'
+        return 'bg-warning-dark text-warning'
       case 'cancelled':
-        return 'bg-red-900 text-red-300'
+        return 'bg-error-dark text-error'
       default:
         return 'bg-neutral-700 text-neutral-400'
     }
@@ -123,8 +123,8 @@ export default function MisReservasPage() {
               <h1 className="text-3xl font-bold text-foreground">Mis Reservas</h1>
               {user ? (
                 <div className="flex items-center gap-2 mt-2">
-                  <User className="w-4 h-4 text-green-400" />
-                  <p className="text-green-400">Bienvenido, {user.user_metadata?.full_name || user.email}</p>
+                  <User className="w-4 h-4 text-success" />
+                  <p className="text-success">Bienvenido, {user.user_metadata?.full_name || user.email}</p>
                 </div>
               ) : (
                 <p className="text-neutral-400 mt-2">Consulta tus reservas ingresando tu email</p>
@@ -171,22 +171,22 @@ export default function MisReservasPage() {
         ) : (
           // Usuario no autenticado - mostrar formulario de búsqueda
           <>
-            <div className="bg-blue-900/20 border border-blue-800 p-6 mb-6">
-              <h3 className="text-blue-300 font-semibold mb-3">🚀 ¡Accede más fácil con tu cuenta!</h3>
-              <p className="text-blue-200 mb-4">
+            <div className="bg-info-dark/20 border border-info p-6 mb-6">
+              <h3 className="text-info font-semibold mb-3"><Rocket className="w-5 h-5 inline mr-2" /> ¡Accede más fácil con tu cuenta!</h3>
+              <p className="text-info mb-4">
                 Si tienes una cuenta de Resio, puedes ver todas tus reservas automáticamente sin necesidad de códigos.
               </p>
               <div className="flex flex-col md:flex-row gap-3">
                 <Link
                   href="/ingresar"
-                  className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 bg-info text-background px-6 py-3 hover:bg-info-dark transition-colors"
                 >
                   <LogIn className="w-4 h-4" />
                   Iniciar sesión
                 </Link>
                 <Link
                   href="/registro"
-                  className="inline-flex items-center justify-center border border-blue-600 text-blue-300 px-6 py-3 hover:bg-blue-900/30 transition-colors"
+                  className="inline-flex items-center justify-center border border-info text-info px-6 py-3 hover:bg-info-dark/30 transition-colors"
                 >
                   Crear cuenta gratis
                 </Link>
@@ -246,9 +246,9 @@ export default function MisReservasPage() {
             </button>
           </form>
           
-              <div className="mt-4 p-4 bg-blue-900/20 border border-blue-800">
-                <h4 className="text-blue-300 font-medium mb-2">¿Dónde encuentro mi código de reserva?</h4>
-                <ul className="text-blue-200 text-sm space-y-1">
+              <div className="mt-4 p-4 bg-info-dark/20 border border-info">
+                <h4 className="text-info font-medium mb-2">¿Dónde encuentro mi código de reserva?</h4>
+                <ul className="text-info text-sm space-y-1">
                   <li>• En el email de confirmación que recibiste</li>
                   <li>• En la página de éxito después de pagar</li>
                   <li>• En cualquier comunicación sobre tu reserva</li>
@@ -283,7 +283,7 @@ export default function MisReservasPage() {
                   onClick={() => setFilterStatus(key as 'all' | 'paid' | 'pending' | 'cancelled')}
                   className={`px-3 py-1 text-sm transition-colors ${
                     filterStatus === key
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-info text-background'
                       : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
                   }`}
                 >
@@ -300,8 +300,8 @@ export default function MisReservasPage() {
             {bookings.length > 0 ? (
               viewMode === 'calendar' ? (
                 <div>
-                  <div className="mb-4 bg-blue-900/20 border border-blue-800 p-4">
-                    <p className="text-blue-300 text-sm">
+                  <div className="mb-4 bg-info-dark/20 border border-info p-4">
+                    <p className="text-info text-sm">
                       📅 Vista de calendario mostrando tus reservas para <strong>{email}</strong>
                     </p>
                   </div>
@@ -367,7 +367,7 @@ export default function MisReservasPage() {
                         <div className="flex gap-2">
                           <Link
                             href={`/reservas/detalle/${selectedEvent.id}`}
-                            className="flex-1 bg-blue-600 text-white py-2 px-4 hover:bg-blue-700 transition-colors text-center"
+                            className="flex-1 bg-info text-background py-2 px-4 hover:bg-info-dark transition-colors text-center"
                           >
                             Ver detalles
                           </Link>
@@ -448,7 +448,7 @@ export default function MisReservasPage() {
                       <div className="flex gap-2">
                         <Link
                           href={`/reservas/detalle/${booking.id}`}
-                          className="flex items-center gap-2 text-sm bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition-colors"
+                          className="flex items-center gap-2 text-sm bg-info text-background px-4 py-2 hover:bg-info-dark transition-colors"
                         >
                           <Eye className="w-4 h-4" />
                           Ver detalles
@@ -459,7 +459,7 @@ export default function MisReservasPage() {
                             onClick={() => {
                               window.location.href = `/reservas/detalle/${booking.id}`
                             }}
-                            className="text-sm bg-yellow-600 text-white px-4 py-2 hover:bg-yellow-700 transition-colors"
+                            className="text-sm bg-warning text-background px-4 py-2 hover:bg-warning-dark transition-colors"
                           >
                             Completar pago
                           </button>
@@ -501,12 +501,12 @@ export default function MisReservasPage() {
         {/* Información adicional para usuarios no autenticados */}
         {!user && !searched && (
           <>
-            <div className="bg-green-900/20 border border-green-800 p-6 mb-6">
-              <h3 className="text-green-300 font-semibold mb-3">🔒 Tu privacidad es importante</h3>
-              <p className="text-green-200 mb-2">
+            <div className="bg-success-dark/20 border border-success p-6 mb-6">
+              <h3 className="text-success font-semibold mb-3"><Lock className="w-5 h-5 inline mr-2" /> Tu privacidad es importante</h3>
+              <p className="text-success mb-2">
                 Para proteger tus datos, ahora necesitas tanto tu email como el código de reserva para acceder a tu información.
               </p>
-              <p className="text-green-200 text-sm">
+              <p className="text-success text-sm">
                 Esto evita que otras personas puedan ver tus reservas solo conociendo tu email.
               </p>
             </div>
@@ -515,14 +515,14 @@ export default function MisReservasPage() {
 
         {/* Mensaje de bienvenida para usuarios autenticados sin reservas */}
         {user && searched && bookings.length === 0 && (
-          <div className="bg-blue-900/20 border border-blue-800 p-6 mb-8">
-            <h3 className="text-blue-300 font-semibold mb-3">👋 ¡Bienvenido a Resio!</h3>
-            <p className="text-blue-200 mb-4">
+          <div className="bg-info-dark/20 border border-info p-6 mb-8">
+            <h3 className="text-info font-semibold mb-3">👋 ¡Bienvenido a Resio!</h3>
+            <p className="text-info mb-4">
               Aún no tienes reservas en tu cuenta. Cuando hagas tu primera reserva, aparecerá aquí automáticamente.
             </p>
             <Link
               href="/"
-              className="inline-flex items-center justify-center bg-blue-600 text-white px-6 py-3 hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center justify-center bg-info text-background px-6 py-3 hover:bg-info-dark transition-colors"
             >
               Explorar alojamientos
             </Link>

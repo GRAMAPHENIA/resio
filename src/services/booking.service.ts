@@ -149,14 +149,14 @@ export class BookingService {
   }
 
   static async cleanupExpiredPendingBookings(): Promise<void> {
-    // Cancelar reservas pendientes de más de 30 minutos
-    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
-    
+    // Cancelar reservas pendientes de más de 15 minutos
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString()
+
     const { error } = await this.supabase
       .from('bookings')
       .update({ status: 'cancelled' })
       .eq('status', 'pending')
-      .lt('created_at', thirtyMinutesAgo)
+      .lt('created_at', fifteenMinutesAgo)
 
     if (error) {
       console.error('Error cleaning up expired bookings:', error)
@@ -175,15 +175,15 @@ export class BookingService {
   }
 
   static async checkRecentPendingBookings(propertyId: string, startDate: string, endDate: string): Promise<boolean> {
-    // Verificar si hay reservas pendientes de menos de 30 minutos
-    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
-    
+    // Verificar si hay reservas pendientes de menos de 15 minutos
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString()
+
     const { data, error } = await this.supabase
       .from('bookings')
       .select('id, created_at')
       .eq('property_id', propertyId)
       .eq('status', 'pending')
-      .gte('created_at', thirtyMinutesAgo)
+      .gte('created_at', fifteenMinutesAgo)
       .or(`start_date.lte.${endDate},end_date.gte.${startDate}`)
 
     if (error) {

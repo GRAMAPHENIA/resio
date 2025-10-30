@@ -1,19 +1,20 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { 
-  ArrowLeft, 
-  Calendar, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Home, 
+import {
+  ArrowLeft,
+  Calendar,
+  MapPin,
+  Phone,
+  Mail,
+  Home,
   CreditCard,
   Download,
   Share2,
   CheckCircle,
   AlertCircle,
-  XCircle
+  XCircle,
+  X
 } from 'lucide-react'
 import { BookingService } from '@/services/booking.service'
 
@@ -38,25 +39,25 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
         return {
           icon: CheckCircle,
           text: 'Confirmada y Pagada',
-          color: 'text-green-400',
-          bgColor: 'bg-green-900/20',
-          borderColor: 'border-green-800'
+          color: 'text-success',
+          bgColor: 'bg-success-dark/20',
+          borderColor: 'border-success'
         }
       case 'pending':
         return {
           icon: AlertCircle,
           text: 'Pendiente de Pago',
-          color: 'text-yellow-400',
-          bgColor: 'bg-yellow-900/20',
-          borderColor: 'border-yellow-800'
+          color: 'text-warning',
+          bgColor: 'bg-warning-dark/20',
+          borderColor: 'border-warning'
         }
       case 'cancelled':
         return {
           icon: XCircle,
           text: 'Cancelada',
-          color: 'text-red-400',
-          bgColor: 'bg-red-900/20',
-          borderColor: 'border-red-800'
+          color: 'text-error',
+          bgColor: 'bg-error-dark/20',
+          borderColor: 'border-error'
         }
       default:
         return {
@@ -100,7 +101,7 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
                 <Share2 className="w-4 h-4" />
                 Compartir
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 bg-info text-background hover:bg-info-dark transition-colors">
                 <Download className="w-4 h-4" />
                 Descargar PDF
               </button>
@@ -123,7 +124,7 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
               )}
               {booking.status === 'pending' && (
                 <p className="text-sm text-neutral-300 mt-1">
-                  Completa el pago para confirmar tu reserva. Tienes 30 minutos antes de que expire.
+                  Completa el pago para confirmar tu reserva. Tienes 15 minutos antes de que expire.
                 </p>
               )}
             </div>
@@ -210,33 +211,33 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
             </div>
 
             {/* Instrucciones importantes */}
-            <div className="bg-blue-900/20 border border-blue-800 p-6">
-              <h3 className="text-blue-300 font-semibold mb-4">
+            <div className="bg-info-dark/20 border border-info p-6">
+              <h3 className="text-info font-semibold mb-4">
                 Instrucciones Importantes
               </h3>
-              
+
               <div className="space-y-3 text-sm">
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">1</div>
+                  <div className="w-6 h-6 bg-info text-background rounded-full flex items-center justify-center text-xs font-bold mt-0.5">1</div>
                   <div>
-                    <p className="text-blue-200 font-medium">Antes del check-in</p>
-                    <p className="text-blue-300">El propietario se contactará contigo 24-48hs antes para coordinar la entrega de llaves y darte instrucciones específicas del alojamiento.</p>
+                    <p className="text-info font-medium">Antes del check-in</p>
+                    <p className="text-info">El propietario se contactará contigo 24-48hs antes para coordinar la entrega de llaves y darte instrucciones específicas del alojamiento.</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">2</div>
+                  <div className="w-6 h-6 bg-info text-background rounded-full flex items-center justify-center text-xs font-bold mt-0.5">2</div>
                   <div>
-                    <p className="text-blue-200 font-medium">Documentación</p>
-                    <p className="text-blue-300">Lleva tu DNI o documento de identidad. Es requerido para el registro de huéspedes.</p>
+                    <p className="text-info font-medium">Documentación</p>
+                    <p className="text-info">Lleva tu DNI o documento de identidad. Es requerido para el registro de huéspedes.</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">3</div>
+                  <div className="w-6 h-6 bg-info text-background rounded-full flex items-center justify-center text-xs font-bold mt-0.5">3</div>
                   <div>
-                    <p className="text-blue-200 font-medium">Contacto de emergencia</p>
-                    <p className="text-blue-300">Guarda nuestros datos de contacto por cualquier inconveniente durante tu estadía.</p>
+                    <p className="text-info font-medium">Contacto de emergencia</p>
+                    <p className="text-info">Guarda nuestros datos de contacto por cualquier inconveniente durante tu estadía.</p>
                   </div>
                 </div>
               </div>
@@ -326,16 +327,31 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
 
             {/* Acciones */}
             {booking.status === 'pending' && (
-              <div className="bg-yellow-900/20 border border-yellow-800 p-6">
-                <h3 className="text-yellow-300 font-semibold mb-3">
-                  Acción Requerida
-                </h3>
-                <p className="text-yellow-200 text-sm mb-4">
-                  Tu reserva expirará pronto. Completa el pago para confirmarla.
-                </p>
-                <button className="w-full bg-yellow-600 text-white py-2 px-4 hover:bg-yellow-700 transition-colors">
-                  Completar Pago
-                </button>
+              <div className="space-y-4">
+                <div className="bg-warning-dark/20 border border-warning p-6">
+                  <h3 className="text-warning font-semibold mb-3">
+                    Acción Requerida
+                  </h3>
+                  <p className="text-warning text-sm mb-4">
+                    Tu reserva expirará pronto. Completa el pago para confirmarla.
+                  </p>
+                  <button className="w-full bg-warning text-background py-2 px-4 hover:bg-warning-dark transition-colors">
+                    Completar Pago
+                  </button>
+                </div>
+
+                <div className="bg-error-dark/20 border border-error p-6">
+                  <h3 className="text-error font-semibold mb-3 flex items-center gap-2">
+                    <X className="w-5 h-5" />
+                    Cancelar Reserva
+                  </h3>
+                  <p className="text-error text-sm mb-4">
+                    Si ya no deseas continuar con esta reserva, puedes cancelarla. Esta acción no se puede deshacer.
+                  </p>
+                  <button className="w-full bg-error text-background py-2 px-4 hover:bg-error-dark transition-colors">
+                    Cancelar Reserva
+                  </button>
+                </div>
               </div>
             )}
           </div>

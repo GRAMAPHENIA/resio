@@ -64,8 +64,8 @@ export default function UserNav() {
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         className="flex items-center gap-2 text-foreground hover:text-neutral-300 transition-colors px-3 py-2"
       >
-        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-          <User className="w-4 h-4 text-white" />
+        <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center">
+          <User className="w-4 h-4 text-background" />
         </div>
         <span className="hidden sm:inline max-w-32 truncate">
           {user.user_metadata?.full_name || user.email}
