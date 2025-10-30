@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { BookingService, BookingWithProperty } from '@/services/booking.service'
-import { Calendar, MapPin, CreditCard, Search, Eye, Download, Filter, CalendarDays, User, LogIn, Rocket, Lock } from 'lucide-react'
+import { Calendar, MapPin, CreditCard, Search, Eye, Download, Filter, CalendarDays, User, LogIn, Rocket, Lock, X } from 'lucide-react'
 import Link from 'next/link'
 import BookingCalendar from '@/components/calendar/BookingCalendar'
 import { CalendarEvent } from '@/services/calendar.service'
@@ -19,6 +19,7 @@ export default function MisReservasPage() {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'pending' | 'cancelled'>('all')
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const [cancellingBooking, setCancellingBooking] = useState<string | null>(null)
 
   const loadUserBookings = useCallback(async () => {
     if (!user?.email) return
@@ -46,7 +47,7 @@ export default function MisReservasPage() {
 
   const searchBookings = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!email.trim()) {
       setError('Ingresa tu email')
       return
@@ -64,7 +65,7 @@ export default function MisReservasPage() {
 
     setLoading(true)
     setError('')
-    
+
     try {
       // Verificar que existe una reserva con ese email y código
       const userBookings = await BookingService.getBookingsByUserAndCode(email.trim(), bookingCode.trim())
@@ -74,6 +75,30 @@ export default function MisReservasPage() {
       setError(err instanceof Error ? err.message : 'Email o código de reserva incorrectos')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleCancelBooking = async (bookingId: string) => {
+    if (!confirm('¿Estás seguro de que quieres cancelar esta reserva? Esta acción no se puede deshacer.')) {
+      return
+    }
+
+    setCancellingBooking(bookingId)
+    try {
+      await BookingService.cancelBooking(bookingId)
+
+      // Actualizar la lista de reservas
+      setBookings(prev => prev.map(booking =>
+        booking.id === bookingId
+          ? { ...booking, status: 'cancelled' as const }
+          : booking
+      ))
+
+      alert('Reserva cancelada exitosamente')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cancelar la reserva')
+    } finally {
+      setCancellingBooking(null)
     }
   }
 
@@ -455,16 +480,27 @@ export default function MisReservasPage() {
                         </Link>
                         
                         {booking.status === 'pending' && (
-                          <button
-                            onClick={() => {
-                              window.location.href = `/reservas/detalle/${booking.id}`
-                            }}
-                            className="text-sm bg-warning text-background px-4 py-2 hover:bg-warning-dark transition-colors"
-                          >
-                            Completar pago
-                          </button>
+                          <>
+                            <button
+                              onClick={() => {
+                                window.location.href = `/reservas/detalle/${booking.id}`
+                              }}
+                              className="text-sm bg-warning text-background px-4 py-2 hover:bg-warning-dark transition-colors"
+                            >
+                              Completar pago
+                            </button>
+
+                            <button
+                              onClick={() => handleCancelBooking(booking.id)}
+                              disabled={cancellingBooking === booking.id}
+                              className="flex items-center gap-2 text-sm bg-error text-background px-4 py-2 hover:bg-error-dark transition-colors disabled:bg-neutral-600 disabled:cursor-not-allowed"
+                            >
+                              <X className="w-4 h-4" />
+                              {cancellingBooking === booking.id ? 'Cancelando...' : 'Cancelar'}
+                            </button>
+                          </>
                         )}
-                        
+
                         {booking.status === 'paid' && (
                           <button
                             onClick={() => {

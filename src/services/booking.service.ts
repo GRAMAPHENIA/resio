@@ -163,6 +163,17 @@ export class BookingService {
     }
   }
 
+  static async cancelBooking(bookingId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('id', bookingId)
+
+    if (error) {
+      throw new Error(`Error al cancelar la reserva: ${error.message}`)
+    }
+  }
+
   static async deleteBooking(bookingId: string): Promise<void> {
     const { error } = await this.supabase
       .from('bookings')
