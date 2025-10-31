@@ -33,5 +33,3 @@ jobs:
             --fail
         env:
           CLEANUP_API_KEY: ${{ secrets.CLEANUP_API_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
