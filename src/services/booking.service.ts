@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client'
-import { createAdminClient } from '@/lib/supabase/server'
 import { Booking } from '@/types/database'
 
 export interface CreateBookingData {
@@ -27,7 +26,13 @@ export class BookingService {
   // Método para crear cliente con auth bypass para operaciones administrativas
   private static async getAdminClient() {
     // Para operaciones que requieren bypass de RLS, usar service role key
-    return await createAdminClient()
+    // Importar dinámicamente para evitar problemas en cliente
+    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
+
+    return createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
   }
 
   static async createBooking(data: CreateBookingData): Promise<Booking> {
