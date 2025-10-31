@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     // MercadoPago envía diferentes tipos de notificaciones
     if (body.type === 'payment') {
       const paymentId = body.data.id
-      
+
       if (!paymentId) {
         console.error('No payment ID in webhook')
         return NextResponse.json({ error: 'No payment ID' }, { status: 400 })
@@ -38,48 +38,106 @@ export async function POST(request: NextRequest) {
 
       // Obtener los detalles del pago desde MercadoPago
       const paymentDetails = await MercadoPagoService.getPayment(paymentId)
-      
+
       if (paymentDetails && paymentDetails.external_reference) {
-        const bookingId = paymentDetails.external_reference
-        
-        // Actualizar el estado de la reserva según el estado del pago
-        let bookingStatus: 'paid' | 'cancelled' | 'pending' | null = null
-        
-        switch (paymentDetails.status) {
-          case 'approved':
-            bookingStatus = 'paid'
-            break
-          case 'cancelled':
-          case 'rejected':
-            bookingStatus = 'cancelled'
-            break
-          case 'pending':
-          case 'in_process':
-            // No actualizamos para pending, ya está en pending por defecto
-            console.log(`Payment ${paymentId} is still pending, no update needed`)
-            break
-        }
+        const reference = paymentDetails.external_reference
 
-        // Solo actualizar si hay un cambio de estado definitivo
-        if (bookingStatus) {
-          await BookingService.updateBookingPayment(
-            bookingId,
-            paymentId.toString(),
-            bookingStatus
-          )
-          console.log(`Booking ${bookingId} updated to ${bookingStatus}`)
+        // Verificar si es una referencia temporal (empieza con 'temp_')
+        if (reference.startsWith('temp_')) {
+          // Es una reserva nueva que debe crearse solo si el pago es aprobado
+          if (paymentDetails.status === 'approved') {
+            // Obtener los datos temporales de la reserva
+            const tempBookingData = (global as any).tempBookings?.get(reference)
 
-          // Enviar email de confirmación si el pago fue aprobado
-          if (bookingStatus === 'paid') {
-            try {
-              const booking = await BookingService.getBookingById(bookingId)
-              if (booking) {
-                const emailTemplate = EmailService.createBookingConfirmationEmail(booking)
-                await EmailService.sendEmail(emailTemplate)
-                console.log(`Confirmation email sent to ${booking.user_email}`)
+            if (tempBookingData) {
+              try {
+                // Crear la reserva real ahora que el pago está confirmado
+                const booking = await BookingService.createBooking({
+                  property_id: tempBookingData.property_id,
+                  user_name: tempBookingData.user_name,
+                  user_email: tempBookingData.user_email,
+                  user_phone: tempBookingData.user_phone,
+                  start_date: tempBookingData.start_date,
+                  end_date: tempBookingData.end_date,
+                  amount: tempBookingData.amount,
+                  user_id: tempBookingData.user_id
+                })
+
+                // Actualizar el payment_id de la reserva ya pagada
+                await (BookingService as any).updateBookingPayment(
+                  booking.id,
+                  paymentId.toString(),
+                  'paid'
+                )
+
+                // Limpiar los datos temporales
+                (global as any).tempBookings?.delete(reference)
+
+                console.log(`New booking ${booking.id} created and marked as paid`)
+
+                // Enviar email de confirmación
+                try {
+                  const bookingWithProperty = await BookingService.getBookingById(booking.id)
+                  if (bookingWithProperty) {
+                    const emailTemplate = EmailService.createBookingConfirmationEmail(bookingWithProperty)
+                    await EmailService.sendEmail(emailTemplate)
+                    console.log(`Confirmation email sent to ${bookingWithProperty.user_email}`)
+                  }
+                } catch (emailError) {
+                  console.error('Error sending confirmation email:', emailError)
+                }
+
+              } catch (bookingError) {
+                console.error('Error creating booking from temp data:', bookingError)
               }
-            } catch (emailError) {
-              console.error('Error sending confirmation email:', emailError)
+            } else {
+              console.error(`Temp booking data not found for reference: ${reference}`)
+            }
+          }
+          // Para pagos no aprobados, simplemente no hacer nada (no crear reserva)
+        } else {
+          // Es una reserva existente, actualizar su estado
+          const bookingId = reference
+
+          // Actualizar el estado de la reserva según el estado del pago
+          let bookingStatus: 'paid' | 'cancelled' | 'pending' | null = null
+
+          switch (paymentDetails.status) {
+            case 'approved':
+              bookingStatus = 'paid'
+              break
+            case 'cancelled':
+            case 'rejected':
+              bookingStatus = 'cancelled'
+              break
+            case 'pending':
+            case 'in_process':
+              // No actualizamos para pending, ya está en pending por defecto
+              console.log(`Payment ${paymentId} is still pending, no update needed`)
+              break
+          }
+
+          // Solo actualizar si hay un cambio de estado definitivo
+          if (bookingStatus) {
+            await BookingService.updateBookingPayment(
+              bookingId,
+              paymentId.toString(),
+              bookingStatus
+            )
+            console.log(`Booking ${bookingId} updated to ${bookingStatus}`)
+
+            // Enviar email de confirmación si el pago fue aprobado
+            if (bookingStatus === 'paid') {
+              try {
+                const booking = await BookingService.getBookingById(bookingId)
+                if (booking) {
+                  const emailTemplate = EmailService.createBookingConfirmationEmail(booking)
+                  await EmailService.sendEmail(emailTemplate)
+                  console.log(`Confirmation email sent to ${booking.user_email}`)
+                }
+              } catch (emailError) {
+                console.error('Error sending confirmation email:', emailError)
+              }
             }
           }
         }

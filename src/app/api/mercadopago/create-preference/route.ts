@@ -5,14 +5,14 @@ import { BookingService } from '@/services/booking.service'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { 
-      property_id, 
-      property_name, 
-      user_name, 
-      user_email, 
+    const {
+      property_id,
+      property_name,
+      user_name,
+      user_email,
       user_phone,
-      start_date, 
-      end_date, 
+      start_date,
+      end_date,
       amount,
       user_id // ID del usuario autenticado (opcional)
     } = body
@@ -46,8 +46,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Crear la reserva pendiente
-    const booking = await BookingService.createBooking({
+    // Crear un ID temporal para la referencia externa (antes de crear la reserva real)
+    const tempBookingId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+    // Calcular días de estadía
+    const startDateObj = new Date(start_date)
+    const endDateObj = new Date(end_date)
+    const days = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24))
+
+    // Crear preferencia de MercadoPago con referencia temporal
+    const preference = await MercadoPagoService.createPreference({
+      title: `Reserva: ${property_name}`,
+      quantity: 1,
+      unit_price: amount,
+      currency_id: 'ARS',
+      description: `Reserva de ${days} ${days === 1 ? 'día' : 'días'} en ${property_name}`,
+      external_reference: tempBookingId,
+      payer: {
+        name: user_name,
+        email: user_email
+      }
+    })
+
+    // Almacenar temporalmente los datos de la reserva en memoria/cache
+    // En producción, usar Redis o similar para esto
+    const tempBookingData = {
       property_id,
       user_name,
       user_email,
@@ -55,30 +78,18 @@ export async function POST(request: NextRequest) {
       start_date,
       end_date,
       amount,
-      user_id // Incluir user_id si está disponible
-    })
+      user_id,
+      created_at: new Date().toISOString()
+    }
 
-    // Calcular días de estadía
-    const startDateObj = new Date(start_date)
-    const endDateObj = new Date(end_date)
-    const days = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24))
-
-    // Crear preferencia de MercadoPago
-    const preference = await MercadoPagoService.createPreference({
-      title: `Reserva: ${property_name}`,
-      quantity: 1,
-      unit_price: amount,
-      currency_id: 'ARS',
-      description: `Reserva de ${days} ${days === 1 ? 'día' : 'días'} en ${property_name}`,
-      external_reference: booking.id,
-      payer: {
-        name: user_name,
-        email: user_email
-      }
-    })
+    // Guardar en un mapa global temporal (solo para desarrollo)
+    if (!(global as any).tempBookings) {
+      (global as any).tempBookings = new Map()
+    }
+    (global as any).tempBookings.set(tempBookingId, tempBookingData)
 
     return NextResponse.json({
-      booking_id: booking.id,
+      temp_booking_id: tempBookingId,
       preference_id: preference.id,
       init_point: preference.init_point,
       sandbox_init_point: preference.sandbox_init_point

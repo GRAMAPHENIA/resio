@@ -27,3 +27,14 @@ export async function createClient() {
     }
   )
 }
+
+export async function createAdminClient() {
+  // Para operaciones administrativas, crear cliente sin cookies
+  // y usar service role key si está disponible
+  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
+
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
