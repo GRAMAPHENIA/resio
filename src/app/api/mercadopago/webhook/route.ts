@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { BookingService, CreateBookingData } from '@/services/booking.service'
+import { BookingService } from '@/services/booking.service'
 import { MercadoPagoService } from '@/services/mercadopago.service'
 import { EmailService } from '@/services/email.service'
 import crypto from 'crypto'
@@ -47,7 +47,20 @@ export async function POST(request: NextRequest) {
           // Es una reserva nueva que debe crearse solo si el pago es aprobado
           if (paymentDetails.status === 'approved') {
             // Obtener los datos temporales de la reserva
-            const tempBookingData = (global as any).tempBookings?.get(reference) as Record<string, unknown> | undefined
+            interface TempBookingData {
+              property_id: string
+              user_name: string
+              user_email: string
+              user_phone: string
+              start_date: string
+              end_date: string
+              amount: number
+              user_id?: string
+              created_at: string
+            }
+
+            const globalAny = global as unknown as { tempBookings?: Map<string, TempBookingData> }
+            const tempBookingData = globalAny.tempBookings?.get(reference)
 
             if (tempBookingData) {
               try {
@@ -71,7 +84,7 @@ export async function POST(request: NextRequest) {
                 )
 
                 // Limpiar los datos temporales
-                ;(global as any).tempBookings?.delete(reference)
+                globalAny.tempBookings?.delete(reference)
 
                 console.log(`✅ New booking ${booking.id} created and marked as paid`)
 

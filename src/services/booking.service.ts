@@ -185,7 +185,7 @@ export class BookingService {
 
   // Método para obtener reservas por user_id (para usuarios autenticados)
   // NOTA: La tabla bookings no tiene columna user_id, usa user_email
-  static async getBookingsByUserId(_userId: string): Promise<BookingWithProperty[]> {
+  static async getBookingsByUserId(): Promise<BookingWithProperty[]> {
     // Como no hay user_id en la tabla, devolver array vacío por ahora
     // En el futuro, si se migra la tabla para incluir user_id, se puede implementar
     console.warn('getBookingsByUserId called but bookings table does not have user_id column')

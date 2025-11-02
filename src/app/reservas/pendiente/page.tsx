@@ -22,7 +22,7 @@ function PendingContent() {
             <span className="text-sm font-medium text-yellow-400">Notificación automática</span>
           </div>
           <p className="text-sm text-neutral-300">
-            Recibirás un email de confirmación cuando tu pago sea aprobado. También puedes revisar el estado de tu reserva desde "Mis Reservas".
+            Recibirás un email de confirmación cuando tu pago sea aprobado. También puedes revisar el estado de tu reserva desde &ldquo;Mis Reservas&rdquo;.
           </p>
         </div>
         

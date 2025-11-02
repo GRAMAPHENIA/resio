@@ -83,10 +83,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Guardar en un mapa global temporal (solo para desarrollo)
-    if (!(global as any).tempBookings) {
-      (global as any).tempBookings = new Map<string, Record<string, unknown>>()
+    interface TempBookingData {
+      property_id: string
+      user_name: string
+      user_email: string
+      user_phone: string
+      start_date: string
+      end_date: string
+      amount: number
+      user_id?: string
+      created_at: string
     }
-    (global as any).tempBookings.set(tempBookingId, tempBookingData)
+
+    const globalAny = global as unknown as { tempBookings?: Map<string, TempBookingData> }
+    if (!globalAny.tempBookings) {
+      globalAny.tempBookings = new Map<string, TempBookingData>()
+    }
+    globalAny.tempBookings.set(tempBookingId, tempBookingData)
 
     console.log('🔍 DEBUG: Preferencia de MercadoPago creada:', {
       tempBookingId,
