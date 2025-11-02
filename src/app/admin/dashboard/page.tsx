@@ -459,8 +459,8 @@ export default function AdminDashboard() {
                       onClick={() => setActiveTab('bookings')}
                       className={`px-4 py-2 text-sm font-medium transition-colors ${
                         activeTab === 'bookings'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                          ? 'bg-blue-600/5 text-blue-600 border border-blue-600/20'
+                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700/10'
                       }`}
                     >
                       Todas
@@ -469,8 +469,8 @@ export default function AdminDashboard() {
                       onClick={() => setActiveTab('pending-bookings')}
                       className={`px-4 py-2 text-sm font-medium transition-colors ${
                         activeTab === 'pending-bookings'
-                          ? 'bg-yellow-600 text-white'
-                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                          ? 'bg-yellow-600/5 text-yellow-600 border border-yellow-600/20'
+                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700/10'
                       }`}
                     >
                       Pendientes ({pendingBookings.length})
@@ -479,8 +479,8 @@ export default function AdminDashboard() {
                       onClick={() => setActiveTab('confirmed-bookings')}
                       className={`px-4 py-2 text-sm font-medium transition-colors ${
                         activeTab === 'confirmed-bookings'
-                          ? 'bg-green-600 text-white'
-                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                          ? 'bg-green-600/5 text-green-600 border border-green-600/20'
+                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700/10'
                       }`}
                     >
                       Confirmadas ({confirmedBookings.length})
