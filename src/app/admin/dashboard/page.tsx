@@ -175,7 +175,15 @@ export default function AdminDashboard() {
       })
       setTimeout(() => setNotification(null), 3000)
       closeConfirmModal()
-      // Recargar datos
+
+      // Actualizar estado local inmediatamente
+      setPendingBookings(prev => prev.filter(b => b.id !== bookingToConfirm.id))
+      setConfirmedBookings(prev => [...prev, { ...bookingToConfirm, status: 'paid' }])
+      setBookings(prev => prev.map(b =>
+        b.id === bookingToConfirm.id ? { ...b, status: 'paid' } : b
+      ))
+
+      // Recargar datos del servidor para asegurar consistencia
       fetchData()
     } catch (error) {
       console.error('Error confirming booking:', error)
@@ -457,30 +465,30 @@ export default function AdminDashboard() {
                   <div className="flex gap-4">
                     <button
                       onClick={() => setActiveTab('bookings')}
-                      className={`px-4 py-2 text-sm font-medium transition-colors ${
+                      className={`px-4 py-2 text-sm font-medium border transition-all duration-200 ${
                         activeTab === 'bookings'
-                          ? 'bg-blue-600/5 text-blue-600 border border-blue-600/20'
-                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700/10'
+                          ? 'bg-foreground text-background border-foreground'
+                          : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600'
                       }`}
                     >
                       Todas
                     </button>
                     <button
                       onClick={() => setActiveTab('pending-bookings')}
-                      className={`px-4 py-2 text-sm font-medium transition-colors ${
+                      className={`px-4 py-2 text-sm font-medium border transition-all duration-200 ${
                         activeTab === 'pending-bookings'
-                          ? 'bg-yellow-600/5 text-yellow-600 border border-yellow-600/20'
-                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700/10'
+                          ? 'bg-foreground text-background border-foreground'
+                          : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600'
                       }`}
                     >
                       Pendientes ({pendingBookings.length})
                     </button>
                     <button
                       onClick={() => setActiveTab('confirmed-bookings')}
-                      className={`px-4 py-2 text-sm font-medium transition-colors ${
+                      className={`px-4 py-2 text-sm font-medium border transition-all duration-200 ${
                         activeTab === 'confirmed-bookings'
-                          ? 'bg-green-600/5 text-green-600 border border-green-600/20'
-                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700/10'
+                          ? 'bg-foreground text-background border-foreground'
+                          : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600'
                       }`}
                     >
                       Confirmadas ({confirmedBookings.length})
