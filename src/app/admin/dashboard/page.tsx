@@ -183,8 +183,8 @@ export default function AdminDashboard() {
         b.id === bookingToConfirm.id ? { ...b, status: 'paid' } : b
       ))
 
-      // Recargar datos del servidor para asegurar consistencia
-      fetchData()
+      // No recargar datos inmediatamente para evitar el rebote
+      // fetchData() se ejecutará en el próximo useEffect o acción del usuario
     } catch (error) {
       console.error('Error confirming booking:', error)
       setNotification({
