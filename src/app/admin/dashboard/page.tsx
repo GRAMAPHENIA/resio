@@ -437,7 +437,7 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {activeTab === 'bookings' && (
+            {['bookings', 'pending-bookings', 'confirmed-bookings'].includes(activeTab) && (
               <div>
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="text-3xl font-bold text-foreground">Gestión de Reservas</h2>
