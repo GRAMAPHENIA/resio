@@ -4,12 +4,15 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Property, Booking } from '@/types/database'
-import { Home, Users, Calendar, TrendingUp, LogOut, Plus, Eye, EyeOff, Trash2, X, Menu, ChevronLeft, BookOpen } from 'lucide-react'
+import { Home, Users, Calendar, TrendingUp, LogOut, Plus, Eye, EyeOff, Trash2, X, Menu, ChevronLeft, BookOpen, CheckCircle, MessageCircle, MapPin } from 'lucide-react'
 import AdminGuard from '@/components/admin/AdminGuard'
 import BookingCalendar from '@/components/admin/BookingCalendar'
 import Spinner from '@/components/ui/spinner'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
+import { BookingService, BookingWithProperty } from '@/services/booking.service'
+
+type TabType = 'overview' | 'properties' | 'bookings' | 'pending-bookings' | 'confirmed-bookings' | 'calendar'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -22,13 +25,15 @@ export default function AdminDashboard() {
   })
   const [properties, setProperties] = useState<Property[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState<TabType>('bookings' as TabType)
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [notification, setNotification] = useState<{
     message: string
     type: 'success' | 'error' | 'info'
   } | null>(null)
+  const [pendingBookings, setPendingBookings] = useState<BookingWithProperty[]>([])
+  const [confirmedBookings, setConfirmedBookings] = useState<BookingWithProperty[]>([])
 
   useEffect(() => {
     fetchData()
@@ -58,6 +63,10 @@ export default function AdminDashboard() {
         console.error('Error fetching bookings:', bookingsError)
       }
 
+      // Obtener reservas pendientes y confirmadas
+      const pendingBookingsData = await BookingService.getPendingBookings()
+      const confirmedBookingsData = await BookingService.getConfirmedBookings()
+
       // Calcular estadísticas
       const totalProperties = propertiesData?.length || 0
       const totalBookings = bookingsData?.filter(booking => booking.status === 'paid').length || 0
@@ -73,6 +82,8 @@ export default function AdminDashboard() {
 
       setProperties(propertiesData || [])
       setBookings(bookingsData || [])
+      setPendingBookings(pendingBookingsData)
+      setConfirmedBookings(confirmedBookingsData)
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -139,6 +150,35 @@ export default function AdminDashboard() {
       })
       setTimeout(() => setNotification(null), 3000)
     }
+  }
+
+  const confirmBooking = async (bookingId: string) => {
+    if (!confirm('¿Estás seguro de que quieres confirmar esta reserva?')) return
+
+    try {
+      await BookingService.confirmBooking(bookingId)
+      setNotification({
+        message: 'Reserva confirmada exitosamente',
+        type: 'success'
+      })
+      setTimeout(() => setNotification(null), 3000)
+      // Recargar datos
+      fetchData()
+    } catch (error) {
+      console.error('Error confirming booking:', error)
+      setNotification({
+        message: 'Error al confirmar la reserva',
+        type: 'error'
+      })
+      setTimeout(() => setNotification(null), 3000)
+    }
+  }
+
+  const openWhatsApp = (phone: string | undefined, booking: BookingWithProperty) => {
+    if (!phone) return
+    const message = `Hola ${booking.user_name}, soy del equipo de Resio. Tu reserva para ${booking.property?.name} del ${new Date(booking.start_date).toLocaleDateString('es-AR')} al ${new Date(booking.end_date).toLocaleDateString('es-AR')} está confirmada. ¿Necesitas alguna información adicional?`
+    const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`
+    window.open(whatsappUrl, '_blank')
   }
 
   if (loading) {
@@ -240,6 +280,11 @@ export default function AdminDashboard() {
                 {sidebarExpanded && (
                   <span className="absolute left-12 whitespace-nowrap opacity-0 animate-fade-in">
                     Reservas
+                  </span>
+                )}
+                {pendingBookings.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {pendingBookings.length}
                   </span>
                 )}
               </button>
@@ -393,64 +438,260 @@ export default function AdminDashboard() {
 
             {activeTab === 'bookings' && (
               <div>
-                <h2 className="text-3xl font-bold text-foreground mb-8">Gestión de Reservas</h2>
-                <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-neutral-800">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Propiedad</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Cliente</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Fechas</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Estado</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Monto</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-neutral-800">
-                        {bookings.map((booking) => (
-                          <tr key={booking.id} className="hover:bg-neutral-800/50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                              {properties.find(p => p.id === booking.property_id)?.name || 'N/A'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                              <div>
-                                <div className="font-medium">{booking.user_name}</div>
-                                <div className="text-neutral-400">{booking.user_email}</div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                              <div>
-                                <div>Desde: {new Date(booking.start_date).toLocaleDateString()}</div>
-                                <div>Hasta: {new Date(booking.end_date).toLocaleDateString()}</div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold ${booking.status === 'paid'
-                                ? 'bg-green-900 text-green-300'
-                                : booking.status === 'pending'
-                                  ? 'bg-yellow-900 text-yellow-300'
-                                  : 'bg-red-900 text-red-300'
-                                }`}>
-                                {booking.status === 'paid' ? 'Pagado' :
-                                  booking.status === 'pending' ? 'Pendiente' : 'Cancelado'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                              ${booking.amount.toLocaleString()}
-                            </td>
-                          </tr>
-                        ))}
-                        {bookings.length === 0 && (
-                          <tr>
-                            <td colSpan={5} className="px-6 py-4 text-center text-neutral-400">
-                              No hay reservas registradas
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-3xl font-bold text-foreground">Gestión de Reservas</h2>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setActiveTab('bookings')}
+                      className={`px-4 py-2 text-sm font-medium transition-colors ${
+                        activeTab === 'bookings'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                      }`}
+                    >
+                      Todas
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('pending-bookings')}
+                      className={`px-4 py-2 text-sm font-medium transition-colors ${
+                        activeTab === 'pending-bookings'
+                          ? 'bg-yellow-600 text-white'
+                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                      }`}
+                    >
+                      Pendientes ({pendingBookings.length})
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('confirmed-bookings')}
+                      className={`px-4 py-2 text-sm font-medium transition-colors ${
+                        activeTab === 'confirmed-bookings'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                      }`}
+                    >
+                      Confirmadas ({confirmedBookings.length})
+                    </button>
                   </div>
                 </div>
+
+                {/* Reservas Pendientes */}
+                {activeTab === 'pending-bookings' && (
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-foreground mb-4">Reservas Pendientes</h3>
+                    {pendingBookings.length === 0 ? (
+                      <div className="bg-neutral-900 border border-neutral-800 p-8 text-center">
+                        <Calendar className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-foreground mb-2">No hay reservas pendientes</h3>
+                        <p className="text-neutral-400">Todas las reservas están confirmadas</p>
+                      </div>
+                    ) : (
+                      pendingBookings.map((booking) => (
+                        <div key={booking.id} className="bg-neutral-900 border border-neutral-800 p-6">
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+                            <div>
+                              <h4 className="text-lg font-semibold text-foreground mb-1">
+                                {booking.property.name}
+                              </h4>
+                              <div className="flex items-center text-neutral-400 text-sm">
+                                <MapPin className="w-4 h-4 mr-1" />
+                                {booking.property.location}
+                              </div>
+                            </div>
+                            <div className="mt-2 md:mt-0 flex items-center gap-2">
+                              <span className="inline-block px-3 py-1 text-sm font-medium bg-yellow-900 text-yellow-300">
+                                Pendiente
+                              </span>
+                              {booking.user_phone && (
+                                <button
+                                  onClick={() => openWhatsApp(booking.user_phone, booking)}
+                                  className="flex items-center gap-2 px-3 py-1 text-sm bg-green-600 text-white hover:bg-green-700 transition-colors"
+                                >
+                                  <MessageCircle className="w-4 h-4" />
+                                  WhatsApp
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                              <p className="text-sm text-neutral-400">Cliente</p>
+                              <p className="font-medium text-foreground">{booking.user_name}</p>
+                              <p className="text-sm text-neutral-300">{booking.user_email}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-neutral-400">Entrada</p>
+                              <p className="font-medium text-foreground">
+                                {new Date(booking.start_date).toLocaleDateString('es-ES')}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-neutral-400">Salida</p>
+                              <p className="font-medium text-foreground">
+                                {new Date(booking.end_date).toLocaleDateString('es-ES')}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
+                            <div className="text-sm text-neutral-400">
+                              Reservado el {new Date(booking.created_at).toLocaleDateString('es-ES')}
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <span className="text-lg font-semibold text-foreground">
+                                ${booking.amount.toLocaleString()}
+                              </span>
+                              <button
+                                onClick={() => confirmBooking(booking.id)}
+                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition-colors"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                                Confirmar Reserva
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {/* Reservas Confirmadas */}
+                {activeTab === 'confirmed-bookings' && (
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-foreground mb-4">Reservas Confirmadas</h3>
+                    {confirmedBookings.length === 0 ? (
+                      <div className="bg-neutral-900 border border-neutral-800 p-8 text-center">
+                        <Calendar className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-foreground mb-2">No hay reservas confirmadas</h3>
+                        <p className="text-neutral-400">Las reservas aparecerán aquí una vez confirmadas</p>
+                      </div>
+                    ) : (
+                      confirmedBookings.map((booking) => (
+                        <div key={booking.id} className="bg-neutral-900 border border-neutral-800 p-6">
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+                            <div>
+                              <h4 className="text-lg font-semibold text-foreground mb-1">
+                                {booking.property.name}
+                              </h4>
+                              <div className="flex items-center text-neutral-400 text-sm">
+                                <MapPin className="w-4 h-4 mr-1" />
+                                {booking.property.location}
+                              </div>
+                            </div>
+                            <div className="mt-2 md:mt-0 flex items-center gap-2">
+                              <span className="inline-block px-3 py-1 text-sm font-medium bg-green-900 text-green-300">
+                                Confirmada
+                              </span>
+                              {booking.user_phone && (
+                                <button
+                                  onClick={() => openWhatsApp(booking.user_phone, booking)}
+                                  className="flex items-center gap-2 px-3 py-1 text-sm bg-green-600 text-white hover:bg-green-700 transition-colors"
+                                >
+                                  <MessageCircle className="w-4 h-4" />
+                                  WhatsApp
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                              <p className="text-sm text-neutral-400">Cliente</p>
+                              <p className="font-medium text-foreground">{booking.user_name}</p>
+                              <p className="text-sm text-neutral-300">{booking.user_email}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-neutral-400">Entrada</p>
+                              <p className="font-medium text-foreground">
+                                {new Date(booking.start_date).toLocaleDateString('es-ES')}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-neutral-400">Salida</p>
+                              <p className="font-medium text-foreground">
+                                {new Date(booking.end_date).toLocaleDateString('es-ES')}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
+                            <div className="text-sm text-neutral-400">
+                              Reservado el {new Date(booking.created_at).toLocaleDateString('es-ES')}
+                              {booking.payment_id && (
+                                <span className="ml-2">• ID Pago: {booking.payment_id}</span>
+                              )}
+                            </div>
+                            <div className="text-lg font-semibold text-green-400">
+                              ${booking.amount.toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {/* Vista general de reservas (por defecto) */}
+                {(activeTab === 'bookings' || activeTab === 'overview') && (
+                  <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-neutral-800">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Propiedad</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Cliente</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Fechas</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Estado</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Monto</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-neutral-800">
+                          {bookings.map((booking) => (
+                            <tr key={booking.id} className="hover:bg-neutral-800/50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                                {properties.find(p => p.id === booking.property_id)?.name || 'N/A'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                                <div>
+                                  <div className="font-medium">{booking.user_name}</div>
+                                  <div className="text-neutral-400">{booking.user_email}</div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                                <div>
+                                  <div>Desde: {new Date(booking.start_date).toLocaleDateString()}</div>
+                                  <div>Hasta: {new Date(booking.end_date).toLocaleDateString()}</div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold ${booking.status === 'paid'
+                                  ? 'bg-green-900 text-green-300'
+                                  : booking.status === 'pending'
+                                    ? 'bg-yellow-900 text-yellow-300'
+                                    : 'bg-red-900 text-red-300'
+                                  }`}>
+                                  {booking.status === 'paid' ? 'Pagado' :
+                                    booking.status === 'pending' ? 'Pendiente' : 'Cancelado'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                                ${booking.amount.toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                          {bookings.length === 0 && (
+                            <tr>
+                              <td colSpan={5} className="px-6 py-4 text-center text-neutral-400">
+                                No hay reservas registradas
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

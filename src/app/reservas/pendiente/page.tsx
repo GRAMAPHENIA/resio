@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { Clock } from 'lucide-react'
+import { Clock, Mail } from 'lucide-react'
 
 function PendingContent() {
   return (
@@ -15,6 +15,16 @@ function PendingContent() {
         <p className="text-neutral-300 mb-6">
           Tu pago está siendo procesado. Te notificaremos cuando se confirme tu reserva.
         </p>
+
+        <div className="bg-yellow-900/20 border border-yellow-800 p-4 mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Mail className="w-4 h-4 text-yellow-400" />
+            <span className="text-sm font-medium text-yellow-400">Notificación automática</span>
+          </div>
+          <p className="text-sm text-neutral-300">
+            Recibirás un email de confirmación cuando tu pago sea aprobado. También puedes revisar el estado de tu reserva desde "Mis Reservas".
+          </p>
+        </div>
         
         <div className="space-y-3">
           <Link

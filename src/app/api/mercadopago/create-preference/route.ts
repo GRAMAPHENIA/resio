@@ -84,9 +84,16 @@ export async function POST(request: NextRequest) {
 
     // Guardar en un mapa global temporal (solo para desarrollo)
     if (!(global as any).tempBookings) {
-      (global as any).tempBookings = new Map()
+      (global as any).tempBookings = new Map<string, Record<string, unknown>>()
     }
     (global as any).tempBookings.set(tempBookingId, tempBookingData)
+
+    console.log('🔍 DEBUG: Preferencia de MercadoPago creada:', {
+      tempBookingId,
+      preference_id: preference.id,
+      amount,
+      property_name
+    })
 
     return NextResponse.json({
       temp_booking_id: tempBookingId,

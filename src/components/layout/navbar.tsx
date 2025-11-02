@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Logo from '@/components/ui/logo'
 import Link from 'next/link'
 import { AuthService } from '@/services/auth.service'
-import { Calendar, Heart, LogOut, ChevronDown, Home, EllipsisVertical, LogIn, UserPlus } from 'lucide-react'
+import { Calendar, Heart, LogOut, ChevronDown, EllipsisVertical, LogIn, UserPlus } from 'lucide-react'
 import Image from 'next/image'
 
 interface SerializedUser {

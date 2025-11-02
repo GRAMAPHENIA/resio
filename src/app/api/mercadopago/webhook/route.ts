@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { BookingService } from '@/services/booking.service'
+import { BookingService, CreateBookingData } from '@/services/booking.service'
 import { MercadoPagoService } from '@/services/mercadopago.service'
 import { EmailService } from '@/services/email.service'
 import crypto from 'crypto'
@@ -47,33 +47,33 @@ export async function POST(request: NextRequest) {
           // Es una reserva nueva que debe crearse solo si el pago es aprobado
           if (paymentDetails.status === 'approved') {
             // Obtener los datos temporales de la reserva
-            const tempBookingData = (global as any).tempBookings?.get(reference)
+            const tempBookingData = (global as any).tempBookings?.get(reference) as Record<string, unknown> | undefined
 
             if (tempBookingData) {
               try {
                 // Crear la reserva real ahora que el pago está confirmado
                 const booking = await BookingService.createBooking({
-                  property_id: tempBookingData.property_id,
-                  user_name: tempBookingData.user_name,
-                  user_email: tempBookingData.user_email,
-                  user_phone: tempBookingData.user_phone,
-                  start_date: tempBookingData.start_date,
-                  end_date: tempBookingData.end_date,
-                  amount: tempBookingData.amount,
-                  user_id: tempBookingData.user_id
+                  property_id: tempBookingData.property_id as string,
+                  user_name: tempBookingData.user_name as string,
+                  user_email: tempBookingData.user_email as string,
+                  user_phone: tempBookingData.user_phone as string | undefined,
+                  start_date: tempBookingData.start_date as string,
+                  end_date: tempBookingData.end_date as string,
+                  amount: tempBookingData.amount as number,
+                  user_id: tempBookingData.user_id as string | undefined
                 })
 
                 // Actualizar el payment_id de la reserva ya pagada
-                await (BookingService as any).updateBookingPayment(
+                await BookingService.updateBookingPayment(
                   booking.id,
                   paymentId.toString(),
                   'paid'
                 )
 
                 // Limpiar los datos temporales
-                (global as any).tempBookings?.delete(reference)
+                ;(global as any).tempBookings?.delete(reference)
 
-                console.log(`New booking ${booking.id} created and marked as paid`)
+                console.log(`✅ New booking ${booking.id} created and marked as paid`)
 
                 // Enviar email de confirmación
                 try {
@@ -81,17 +81,17 @@ export async function POST(request: NextRequest) {
                   if (bookingWithProperty) {
                     const emailTemplate = EmailService.createBookingConfirmationEmail(bookingWithProperty)
                     await EmailService.sendEmail(emailTemplate)
-                    console.log(`Confirmation email sent to ${bookingWithProperty.user_email}`)
+                    console.log(`✅ Confirmation email sent to ${bookingWithProperty.user_email}`)
                   }
                 } catch (emailError) {
-                  console.error('Error sending confirmation email:', emailError)
+                  console.error('❌ Error sending confirmation email:', emailError)
                 }
 
               } catch (bookingError) {
-                console.error('Error creating booking from temp data:', bookingError)
+                console.error('❌ Error creating booking from temp data:', bookingError)
               }
             } else {
-              console.error(`Temp booking data not found for reference: ${reference}`)
+              console.error(`❌ Temp booking data not found for reference: ${reference}`)
             }
           }
           // Para pagos no aprobados, simplemente no hacer nada (no crear reserva)
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
             case 'pending':
             case 'in_process':
               // No actualizamos para pending, ya está en pending por defecto
-              console.log(`Payment ${paymentId} is still pending, no update needed`)
+              console.log(`🔍 Payment ${paymentId} is still pending, no update needed`)
               break
           }
 
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
               paymentId.toString(),
               bookingStatus
             )
-            console.log(`Booking ${bookingId} updated to ${bookingStatus}`)
+            console.log(`✅ Booking ${bookingId} updated to ${bookingStatus}`)
 
             // Enviar email de confirmación si el pago fue aprobado
             if (bookingStatus === 'paid') {
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
                   console.log(`Confirmation email sent to ${booking.user_email}`)
                 }
               } catch (emailError) {
-                console.error('Error sending confirmation email:', emailError)
+                console.error('❌ Error sending confirmation email:', emailError)
               }
             }
           }
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
           case 'pending':
           case 'in_process':
             // No actualizamos para pending, ya está en pending por defecto
-            console.log(`Payment ${id} is still pending, no update needed`)
+            console.log(`🔍 Payment ${id} is still pending, no update needed`)
             break
         }
 
@@ -194,7 +194,7 @@ export async function GET(request: NextRequest) {
             id,
             bookingStatus
           )
-          console.log(`Booking ${bookingId} updated to ${bookingStatus} via GET`)
+          console.log(`✅ Booking ${bookingId} updated to ${bookingStatus} via GET`)
 
           // Enviar email de confirmación si el pago fue aprobado
           if (bookingStatus === 'paid') {
@@ -206,7 +206,7 @@ export async function GET(request: NextRequest) {
                 console.log(`Confirmation email sent to ${booking.user_email}`)
               }
             } catch (emailError) {
-              console.error('Error sending confirmation email:', emailError)
+              console.error('❌ Error sending confirmation email:', emailError)
             }
           }
         }

@@ -98,6 +98,14 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
                 <p className="text-blue-300">El propietario se contactará contigo 24-48hs antes del check-in</p>
               </div>
             </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">4</div>
+              <div>
+                <p className="text-blue-200 font-medium">Dashboard del propietario</p>
+                <p className="text-blue-300">Tu reserva aparece automáticamente en el panel del administrador</p>
+              </div>
+            </div>
           </div>
         </div>
 
