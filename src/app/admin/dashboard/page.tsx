@@ -34,6 +34,8 @@ export default function AdminDashboard() {
   } | null>(null)
   const [pendingBookings, setPendingBookings] = useState<BookingWithProperty[]>([])
   const [confirmedBookings, setConfirmedBookings] = useState<BookingWithProperty[]>([])
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+  const [bookingToConfirm, setBookingToConfirm] = useState<BookingWithProperty | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -152,16 +154,27 @@ export default function AdminDashboard() {
     }
   }
 
-  const confirmBooking = async (bookingId: string) => {
-    if (!confirm('¿Estás seguro de que quieres confirmar esta reserva?')) return
+  const openConfirmModal = (booking: BookingWithProperty) => {
+    setBookingToConfirm(booking)
+    setConfirmModalOpen(true)
+  }
+
+  const closeConfirmModal = () => {
+    setConfirmModalOpen(false)
+    setBookingToConfirm(null)
+  }
+
+  const confirmBooking = async () => {
+    if (!bookingToConfirm) return
 
     try {
-      await BookingService.confirmBooking(bookingId)
+      await BookingService.confirmBooking(bookingToConfirm.id)
       setNotification({
         message: 'Reserva confirmada exitosamente',
         type: 'success'
       })
       setTimeout(() => setNotification(null), 3000)
+      closeConfirmModal()
       // Recargar datos
       fetchData()
     } catch (error) {
@@ -543,7 +556,7 @@ export default function AdminDashboard() {
                                 ${booking.amount.toLocaleString()}
                               </span>
                               <button
-                                onClick={() => confirmBooking(booking.id)}
+                                onClick={() => openConfirmModal(booking)}
                                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition-colors"
                               >
                                 <CheckCircle className="w-4 h-4" />
@@ -834,6 +847,78 @@ export default function AdminDashboard() {
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Confirm Booking Modal */}
+        {confirmModalOpen && bookingToConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-neutral-900 border border-neutral-800 p-6 max-w-md w-full">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-foreground">Confirmar Reserva</h3>
+                <button
+                  onClick={closeConfirmModal}
+                  className="p-1 hover:bg-neutral-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-neutral-400 mb-1">Propiedad</p>
+                  <p className="font-medium text-foreground">{bookingToConfirm.property.name}</p>
+                  <p className="text-sm text-neutral-300">{bookingToConfirm.property.location}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-neutral-400">Cliente</p>
+                    <p className="font-medium text-foreground">{bookingToConfirm.user_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-neutral-400">Monto</p>
+                    <p className="font-medium text-foreground">${bookingToConfirm.amount.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-neutral-400">Check-in</p>
+                    <p className="font-medium text-foreground">
+                      {new Date(bookingToConfirm.start_date).toLocaleDateString('es-ES')}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-neutral-400">Check-out</p>
+                    <p className="font-medium text-foreground">
+                      {new Date(bookingToConfirm.end_date).toLocaleDateString('es-ES')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-yellow-900/20 border border-yellow-700 p-3">
+                  <p className="text-sm text-yellow-300">
+                    ¿Estás seguro de que quieres confirmar esta reserva? Esta acción no se puede deshacer.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={closeConfirmModal}
+                  className="flex-1 px-4 py-2 bg-neutral-800 text-neutral-300 hover:bg-neutral-700 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmBooking}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition-colors"
+                >
+                  Confirmar Reserva
+                </button>
               </div>
             </div>
           </div>
