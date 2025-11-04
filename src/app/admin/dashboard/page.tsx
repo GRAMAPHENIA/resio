@@ -178,6 +178,9 @@ export default function AdminDashboard() {
 
       // Recargar datos inmediatamente para asegurar consistencia
       await fetchData()
+
+      // Cambiar automáticamente a la pestaña de confirmadas para mostrar el resultado
+      setActiveTab('confirmed-bookings')
     } catch (error) {
       console.error('Error confirming booking:', error)
       setNotification({
@@ -460,7 +463,7 @@ export default function AdminDashboard() {
                       onClick={() => setActiveTab('bookings')}
                       className={`px-4 py-2 text-sm font-medium border transition-all duration-200 ${
                         activeTab === 'bookings'
-                          ? 'bg-foreground text-background border-foreground'
+                          ? 'bg-blue-600 text-white border-blue-600'
                           : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600'
                       }`}
                     >
@@ -470,7 +473,7 @@ export default function AdminDashboard() {
                       onClick={() => setActiveTab('pending-bookings')}
                       className={`px-4 py-2 text-sm font-medium border transition-all duration-200 ${
                         activeTab === 'pending-bookings'
-                          ? 'bg-foreground text-background border-foreground'
+                          ? 'bg-yellow-600 text-white border-yellow-600'
                           : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600'
                       }`}
                     >
@@ -480,7 +483,7 @@ export default function AdminDashboard() {
                       onClick={() => setActiveTab('confirmed-bookings')}
                       className={`px-4 py-2 text-sm font-medium border transition-all duration-200 ${
                         activeTab === 'confirmed-bookings'
-                          ? 'bg-foreground text-background border-foreground'
+                          ? 'bg-green-600 text-white border-green-600'
                           : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600'
                       }`}
                     >
