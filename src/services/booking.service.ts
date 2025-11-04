@@ -39,7 +39,10 @@ export class BookingService {
   static async confirmBooking(bookingId: string): Promise<void> {
     console.log('🔍 DEBUG: Confirmando reserva desde admin:', bookingId)
 
-    const { error } = await this.supabase
+    // Usar cliente admin para bypass de RLS
+    const adminClient = await this.getAdminClient()
+
+    const { error } = await adminClient
       .from('bookings')
       .update({ status: 'paid' })
       .eq('id', bookingId)

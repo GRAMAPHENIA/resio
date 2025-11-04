@@ -176,17 +176,8 @@ export default function AdminDashboard() {
       setTimeout(() => setNotification(null), 3000)
       closeConfirmModal()
 
-      // Actualizar estado local inmediatamente
-      setPendingBookings(prev => prev.filter(b => b.id !== bookingToConfirm.id))
-      setConfirmedBookings(prev => [...prev, { ...bookingToConfirm, status: 'paid' }])
-      setBookings(prev => prev.map(b =>
-        b.id === bookingToConfirm.id ? { ...b, status: 'paid' } : b
-      ))
-
-      // Recargar datos después de un breve delay para asegurar consistencia
-      setTimeout(() => {
-        fetchData()
-      }, 1000)
+      // Recargar datos inmediatamente para asegurar consistencia
+      await fetchData()
     } catch (error) {
       console.error('Error confirming booking:', error)
       setNotification({
