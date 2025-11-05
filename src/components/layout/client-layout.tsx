@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Navbar from './navbar'
+import Footer from './footer'
 
 interface SerializedUser {
   id: string
@@ -26,7 +27,10 @@ export default function ClientLayout({ user, children }: ClientLayoutProps) {
   return (
     <>
       {!isAdminRoute && <Navbar user={user} />}
-      {children}
+      <main className="min-h-screen">
+        {children}
+      </main>
+      {!isAdminRoute && <Footer />}
     </>
   )
 }

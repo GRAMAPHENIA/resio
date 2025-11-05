@@ -28,17 +28,17 @@ function PendingContent() {
         
         <div className="space-y-3">
           <Link
-            href="/tablero/reservas"
+            href="/mis-reservas"
             className="block w-full bg-foreground text-background py-3 px-4 hover:bg-neutral-200 transition-colors font-medium"
           >
             Ver mis reservas
           </Link>
           
           <Link
-            href="/tablero"
+            href="/"
             className="block w-full border border-neutral-700 text-neutral-300 py-3 px-4 hover:bg-neutral-800 transition-colors"
           >
-            Ir al tablero
+            Volver al inicio
           </Link>
         </div>
       </div>

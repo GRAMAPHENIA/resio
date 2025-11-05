@@ -16,53 +16,59 @@ import {
   XCircle,
   X
 } from 'lucide-react'
-import { BookingService } from '@/services/booking.service'
+import { Container } from '@/infrastructure/container/Container'
 
 async function BookingDetailContent({ params }: { params: { id: string } }) {
   let booking = null
+  let property = null
   
   try {
-    booking = await BookingService.getBookingById(params.id)
+    const container = Container.getInstance()
+    const bookingService = container.getBookingService()
+    
+    const result = await bookingService.getBooking({ bookingId: params.id })
+    booking = result.booking
+    property = result.property
   } catch (error) {
     console.error('Error fetching booking:', error)
   }
 
-  if (!booking) {
+  if (!booking || !property) {
     notFound()
   }
 
-  const nights = Math.ceil((new Date(booking.end_date).getTime() - new Date(booking.start_date).getTime()) / (1000 * 60 * 60 * 24))
+  const nights = booking.dateRange.getNights()
   
-  const getStatusInfo = (status: string) => {
-    switch (status) {
+  const getStatusInfo = (statusValue: string) => {
+    switch (statusValue) {
       case 'paid':
         return {
           icon: CheckCircle,
           text: 'Confirmada y Pagada',
-          color: 'text-success',
-          bgColor: 'bg-success-dark/20',
-          borderColor: 'border-success'
+          color: 'text-green-400',
+          bgColor: 'bg-green-900/20',
+          borderColor: 'border-green-500'
         }
       case 'pending':
         return {
           icon: AlertCircle,
           text: 'Pendiente de Pago',
-          color: 'text-warning',
-          bgColor: 'bg-warning-dark/20',
-          borderColor: 'border-warning'
+          color: 'text-yellow-400',
+          bgColor: 'bg-yellow-900/20',
+          borderColor: 'border-yellow-500'
         }
       case 'cancelled':
         return {
           icon: XCircle,
           text: 'Cancelada',
-          color: 'text-error',
-          bgColor: 'bg-error-dark/20',
-          borderColor: 'border-error'
+          color: 'text-red-400',
+          bgColor: 'bg-red-900/20',
+          borderColor: 'border-red-500'
         }
       default:
         return {
           icon: AlertCircle,
-          text: status,
+          text: statusValue,
           color: 'text-neutral-400',
           bgColor: 'bg-neutral-900/20',
           borderColor: 'border-neutral-800'
@@ -70,7 +76,7 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
     }
   }
 
-  const statusInfo = getStatusInfo(booking.status)
+  const statusInfo = getStatusInfo(booking.status.toString())
   const StatusIcon = statusInfo.icon
 
   return (
@@ -92,7 +98,7 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
                 Detalles de Reserva
               </h1>
               <p className="text-neutral-400">
-                Código: <span className="font-mono text-foreground">{booking.id.slice(0, 8).toUpperCase()}</span>
+                Código: <span className="font-mono text-foreground">{booking.getBookingCode()}</span>
               </p>
             </div>
             
@@ -117,12 +123,12 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
               <h2 className={`text-lg font-semibold ${statusInfo.color}`}>
                 {statusInfo.text}
               </h2>
-              {booking.status === 'paid' && (
+              {booking.status.isPaid() && (
                 <p className="text-sm text-neutral-300 mt-1">
                   Tu reserva está confirmada. El propietario se contactará contigo antes del check-in.
                 </p>
               )}
-              {booking.status === 'pending' && (
+              {booking.status.isPending() && (
                 <p className="text-sm text-neutral-300 mt-1">
                   Completa el pago para confirmar tu reserva. Tienes 15 minutos antes de que expire.
                 </p>
@@ -143,10 +149,10 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
               
               <div className="space-y-4">
                 <div>
-                  <h4 className="text-lg font-medium text-foreground">{booking.property.name}</h4>
+                  <h4 className="text-lg font-medium text-foreground">{property.name}</h4>
                   <div className="flex items-center gap-2 text-neutral-400 mt-1">
                     <MapPin className="w-4 h-4" />
-                    <span>{booking.property.location}</span>
+                    <span>{property.location}</span>
                   </div>
                 </div>
                 
@@ -156,7 +162,7 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-neutral-400" />
                       <span className="text-foreground">
-                        {new Date(booking.start_date).toLocaleDateString('es-AR', {
+                        {booking.dateRange.startDate.toLocaleDateString('es-AR', {
                           weekday: 'long',
                           year: 'numeric',
                           month: 'long',
@@ -172,7 +178,7 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-neutral-400" />
                       <span className="text-foreground">
-                        {new Date(booking.end_date).toLocaleDateString('es-AR', {
+                        {booking.dateRange.endDate.toLocaleDateString('es-AR', {
                           weekday: 'long',
                           year: 'numeric',
                           month: 'long',
@@ -195,12 +201,12 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-neutral-400">Nombre completo</p>
-                  <p className="text-foreground">{booking.user_name}</p>
+                  <p className="text-foreground">{booking.contactInfo.name}</p>
                 </div>
                 
                 <div>
                   <p className="text-sm text-neutral-400">Email</p>
-                  <p className="text-foreground">{booking.user_email}</p>
+                  <p className="text-foreground">{booking.contactInfo.getEmailAddress()}</p>
                 </div>
                 
                 <div>
@@ -278,13 +284,13 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
                   </div>
                 </div>
                 
-                {booking.payment_id && (
+                {booking.paymentId && (
                   <div className="pt-3 border-t border-neutral-700">
                     <p className="text-xs text-neutral-500">
-                      ID de pago: {booking.payment_id}
+                      ID de pago: {booking.paymentId}
                     </p>
                     <p className="text-xs text-neutral-500">
-                      Fecha: {new Date(booking.created_at).toLocaleDateString('es-AR')}
+                      Fecha: {booking.createdAt ? new Date(booking.createdAt).toLocaleDateString('es-AR') : 'N/A'}
                     </p>
                   </div>
                 )}
@@ -326,32 +332,34 @@ async function BookingDetailContent({ params }: { params: { id: string } }) {
             </div>
 
             {/* Acciones */}
-            {booking.status === 'pending' && (
+            {booking.canCompletePayment() && (
               <div className="space-y-4">
-                <div className="bg-warning-dark/20 border border-warning p-6">
-                  <h3 className="text-warning font-semibold mb-3">
+                <div className="bg-yellow-900/20 border border-yellow-500 p-6">
+                  <h3 className="text-yellow-400 font-semibold mb-3">
                     Acción Requerida
                   </h3>
-                  <p className="text-warning text-sm mb-4">
+                  <p className="text-yellow-300 text-sm mb-4">
                     Tu reserva expirará pronto. Completa el pago para confirmarla.
                   </p>
-                  <button className="w-full bg-warning text-background py-2 px-4 hover:bg-warning-dark transition-colors">
+                  <button className="w-full bg-yellow-600 text-white py-2 px-4 hover:bg-yellow-700 transition-colors">
                     Completar Pago
                   </button>
                 </div>
 
-                <div className="bg-error-dark/20 border border-error p-6">
-                  <h3 className="text-error font-semibold mb-3 flex items-center gap-2">
-                    <X className="w-5 h-5" />
-                    Cancelar Reserva
-                  </h3>
-                  <p className="text-error text-sm mb-4">
-                    Si ya no deseas continuar con esta reserva, puedes cancelarla. Esta acción no se puede deshacer.
-                  </p>
-                  <button className="w-full bg-error text-background py-2 px-4 hover:bg-error-dark transition-colors">
-                    Cancelar Reserva
-                  </button>
-                </div>
+                {booking.canBeCancelled() && (
+                  <div className="bg-red-900/20 border border-red-500 p-6">
+                    <h3 className="text-red-400 font-semibold mb-3 flex items-center gap-2">
+                      <X className="w-5 h-5" />
+                      Cancelar Reserva
+                    </h3>
+                    <p className="text-red-300 text-sm mb-4">
+                      Si ya no deseas continuar con esta reserva, puedes cancelarla. Esta acción no se puede deshacer.
+                    </p>
+                    <button className="w-full bg-red-600 text-white py-2 px-4 hover:bg-red-700 transition-colors">
+                      Cancelar Reserva
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -1,17 +1,27 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { CheckCircle, Calendar, MapPin, Clock, Phone, Mail, Home, Info, Download } from 'lucide-react'
-import { BookingService } from '@/services/booking.service'
+import { Container } from '@/infrastructure/container/Container'
 
 async function SuccessContent({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const paymentId = searchParams.payment_id as string
   const externalReference = searchParams.external_reference as string
+  const bookingId = searchParams.booking_id as string
 
   let booking = null
+  let property = null
 
-  if (externalReference) {
+  // Usar el ID de reserva si está disponible, sino usar external_reference
+  const id = bookingId || externalReference
+
+  if (id) {
     try {
-      booking = await BookingService.getBookingById(externalReference)
+      const container = Container.getInstance()
+      const bookingService = container.getBookingService()
+      
+      const result = await bookingService.getBooking({ bookingId: id })
+      booking = result.booking
+      property = result.property
     } catch (error) {
       console.error('Error fetching booking:', error)
     }
@@ -32,7 +42,7 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
           </p>
         </div>
 
-        {booking && (
+        {booking && property && (
           <div className="bg-neutral-800 border border-neutral-700 p-6 mb-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Detalles de tu reserva</h2>
 
@@ -40,8 +50,8 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
               <div className="flex items-center gap-3">
                 <MapPin className="w-5 h-5 text-neutral-400" />
                 <div>
-                  <p className="text-foreground font-medium">{booking.property.name}</p>
-                  <p className="text-sm text-neutral-400">{booking.property.location}</p>
+                  <p className="text-foreground font-medium">{property.name}</p>
+                  <p className="text-sm text-neutral-400">{property.location}</p>
                 </div>
               </div>
 
@@ -49,10 +59,10 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
                 <Calendar className="w-5 h-5 text-neutral-400" />
                 <div>
                   <p className="text-foreground">
-                    {new Date(booking.start_date).toLocaleDateString('es-AR')} - {new Date(booking.end_date).toLocaleDateString('es-AR')}
+                    {booking.dateRange.getFormattedRange()}
                   </p>
                   <p className="text-sm text-neutral-400">
-                    {Math.ceil((new Date(booking.end_date).getTime() - new Date(booking.start_date).getTime()) / (1000 * 60 * 60 * 24))} noches
+                    {booking.dateRange.getNights()} {booking.dateRange.getNights() === 1 ? 'noche' : 'noches'}
                   </p>
                 </div>
               </div>
@@ -60,7 +70,7 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
               <div className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-neutral-400" />
                 <div>
-                  <p className="text-foreground">Huésped: {booking.user_name}</p>
+                  <p className="text-foreground">Huésped: {booking.contactInfo.name}</p>
                   <p className="text-sm text-neutral-400">Total pagado: ${booking.amount.toLocaleString('es-AR')}</p>
                 </div>
               </div>
@@ -130,7 +140,7 @@ async function SuccessContent({ searchParams }: { searchParams: { [key: string]:
 
               <div>
                 <p className="text-neutral-400 mb-1">Código de reserva</p>
-                <p className="text-foreground font-mono">{booking.id.slice(0, 8).toUpperCase()}</p>
+                <p className="text-foreground font-mono">{booking.getBookingCode()}</p>
               </div>
 
               <div>

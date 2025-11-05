@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
-import BookingForm from '@/components/booking/BookingForm'
+import { notFound, redirect } from 'next/navigation'
+import BookingFormV2 from '@/presentation/components/booking/BookingFormV2'
+import { Property } from '@/domain/entities/Property'
 import { MapPin, Bed, Bath, Square } from 'lucide-react'
 
 interface PropertyDetailPageProps {
@@ -11,15 +12,33 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: property, error } = await supabase
+  const { data: propertyData, error } = await supabase
     .from('properties')
     .select('*')
     .eq('id', id)
     .single()
 
-  if (error || !property) {
+  if (error || !propertyData) {
     notFound()
   }
+
+  // Convert to domain entity
+  const property = new Property(
+    propertyData.id,
+    propertyData.name,
+    propertyData.description,
+    propertyData.location,
+    propertyData.price_per_night,
+    propertyData.images || [],
+    propertyData.owner_id,
+    propertyData.available,
+    propertyData.bedrooms,
+    propertyData.bathrooms,
+    propertyData.area,
+    propertyData.slug,
+    new Date(propertyData.created_at),
+    propertyData.updated_at ? new Date(propertyData.updated_at) : undefined
+  )
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -68,7 +87,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                 <div className="border-t border-gray-200 pt-6">
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-gray-900">
-                      ${property.price_per_night.toLocaleString()}
+                      ${property.pricePerNight.toLocaleString()}
                     </span>
                     <span className="text-gray-600">por noche</span>
                   </div>
@@ -80,7 +99,16 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
           {/* Formulario de reserva */}
           <div className="lg:col-span-1">
             <div className="sticky top-8">
-              <BookingForm property={property} />
+              <BookingFormV2 
+                property={property} 
+                onSuccess={(bookingId) => {
+                  // Redirect to booking success page
+                  redirect(`/reservas/exito?booking_id=${bookingId}`)
+                }}
+                onError={(error) => {
+                  console.error('Booking error:', error)
+                }}
+              />
             </div>
           </div>
         </div>
